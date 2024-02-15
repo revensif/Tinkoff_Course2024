@@ -20,7 +20,7 @@ public class TrackCommand extends AbstractCommand {
 
     @Override
     public String command() {
-        return "/track <link>";
+        return "/track";
     }
 
     @Override

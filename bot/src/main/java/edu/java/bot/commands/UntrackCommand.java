@@ -20,7 +20,7 @@ public class UntrackCommand extends AbstractCommand {
 
     @Override
     public String command() {
-        return "/untrack <link>";
+        return "/untrack";
     }
 
     @Override
