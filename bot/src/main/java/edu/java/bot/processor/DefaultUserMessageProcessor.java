@@ -11,13 +11,15 @@ import edu.java.bot.commands.UntrackCommand;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.stereotype.Component;
 
+@Component
 public class DefaultUserMessageProcessor implements UserMessageProcessor {
 
     private final List<Command> commands = new ArrayList<>();
 
     public DefaultUserMessageProcessor() {
-        commands.addAll(List.of(
+        this.commands.addAll(List.of(
             new StartCommand(this),
             new HelpCommand(this),
             new TrackCommand(this),

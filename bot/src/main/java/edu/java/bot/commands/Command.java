@@ -13,11 +13,18 @@ public interface Command {
     SendMessage handle(Update update);
 
     default boolean supports(Update update) {
-        return ((update != null) && (update.message() != null)
-            && (update.message().text() != null) && (update.message().text().startsWith(command())));
+        return ((update != null)
+            && (update.message() != null)
+            && (update.message().text() != null)
+            && (checkCommand(update)));
     }
 
     default BotCommand toApiCommand() {
         return new BotCommand(command(), description());
+    }
+
+    //В будущем можно будет добавить дополнительные условия
+    private boolean checkCommand(Update update) {
+        return update.message().text().split(" ")[0].equals(command());
     }
 }

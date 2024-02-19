@@ -1,4 +1,4 @@
-package edu.java.bot;
+package edu.java.bot.service;
 
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.UpdatesListener;
@@ -13,18 +13,20 @@ import edu.java.bot.configuration.ApplicationConfig;
 import edu.java.bot.processor.UserMessageProcessor;
 import java.util.List;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.stereotype.Component;
 
 @Log4j2
+@Component
 public class DefaultBot implements Bot {
 
     private final TelegramBot bot;
     private final UserMessageProcessor processor;
 
     public DefaultBot(ApplicationConfig config, UserMessageProcessor processor) {
-        bot = new TelegramBot(config.telegramToken());
+        this.bot = new TelegramBot(config.telegramToken());
         this.processor = processor;
-        bot.setUpdatesListener(this);
-        bot.execute(createMenu());
+        this.bot.setUpdatesListener(this);
+        this.bot.execute(createMenu());
     }
 
     @Override

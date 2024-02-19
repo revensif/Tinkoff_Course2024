@@ -1,9 +1,10 @@
+package edu.java.bot.service;
+
 import com.pengrad.telegrambot.model.BotCommand;
 import com.pengrad.telegrambot.model.Chat;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SetMyCommands;
-import edu.java.bot.DefaultBot;
 import edu.java.bot.commands.Command;
 import edu.java.bot.commands.StartCommand;
 import edu.java.bot.configuration.ApplicationConfig;
@@ -24,13 +25,16 @@ public class DefaultBotTest {
     @Test
     @DisplayName("Menu creation test")
     public void shouldCreateMenu() {
+        //arrange
         UserMessageProcessor processor = mock(DefaultUserMessageProcessor.class);
         Command startCommand = new StartCommand(processor);
         List<? extends Command> commands = List.of(startCommand);
         Mockito.<List<? extends Command>>when(processor.commands()).thenReturn(commands);
         String token = System.getenv("TOKEN");
         DefaultBot bot = new DefaultBot(new ApplicationConfig(token), processor);
+        //act
         SetMyCommands result = bot.createMenu();
+        //assert
         BotCommand[] botCommands = (BotCommand[]) result.getParameters().get("commands");
         assertThat(botCommands).isEqualTo(List.of(startCommand.toApiCommand()).toArray());
     }
@@ -38,6 +42,7 @@ public class DefaultBotTest {
     @Test
     @DisplayName("Process test")
     public void shouldProcessUpdates() {
+        //arrange
         UserMessageProcessor processor = new DefaultUserMessageProcessor();
         Update update = mock(Update.class);
         Message message = mock(Message.class);
@@ -47,7 +52,9 @@ public class DefaultBotTest {
         when(message.chat()).thenReturn(chat);
         String token = System.getenv("TOKEN");
         DefaultBot bot = new DefaultBot(new ApplicationConfig(token), processor);
+        //act
         int process = bot.process(List.of(update));
+        //assert
         assertThat(process).isEqualTo(-1);
     }
 }

@@ -1,3 +1,5 @@
+package edu.java.bot.utils;
+
 import java.net.URI;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;

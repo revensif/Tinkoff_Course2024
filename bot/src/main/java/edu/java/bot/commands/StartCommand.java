@@ -8,18 +8,21 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class StartCommand extends AbstractCommand {
 
+    private static final String START_COMMAND = "/start";
+    private static final String DESCRIPTION = "Command to start the bot";
+
     public StartCommand(UserMessageProcessor processor) {
         super(processor);
     }
 
     @Override
     public String command() {
-        return "/start";
+        return START_COMMAND;
     }
 
     @Override
     public String description() {
-        return "Command to start the bot";
+        return DESCRIPTION;
     }
 
     @Override

@@ -10,7 +10,8 @@ public abstract class AbstractCommand implements Command {
         this.processor = processor;
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
         return command() + " - " + description();
     }
 }

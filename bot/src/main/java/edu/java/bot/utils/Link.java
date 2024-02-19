@@ -14,7 +14,8 @@ public class Link {
     private String query;
     private String fragment;
 
-    @SneakyThrows @Override
+    @SneakyThrows
+    @Override
     public String toString() {
         return new URI(protocol, hostname, path, query, fragment).toString();
     }
