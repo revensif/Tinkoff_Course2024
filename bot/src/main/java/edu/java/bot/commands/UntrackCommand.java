@@ -7,8 +7,8 @@ import edu.java.bot.utils.Link;
 import java.net.URI;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
+import static edu.java.bot.utils.CommandMessageUtils.getURIFromMessage;
 import static edu.java.bot.utils.Link.INCORRECT_LINK;
-import static edu.java.bot.utils.LinkUtils.isCorrectLink;
 import static edu.java.bot.utils.LinkUtils.parse;
 
 @Log4j2
@@ -44,17 +44,5 @@ public class UntrackCommand extends AbstractCommand {
         }
         Link link = parse(url);
         return new SendMessage(chatId, "The link " + link + " is no longer being tracked");
-    }
-
-    @SneakyThrows
-    private URI getURIFromMessage(String[] messageParts) {
-        if (messageParts.length != 2) {
-            return null;
-        }
-        URI url = new URI(messageParts[1]);
-        if (!isCorrectLink(url)) {
-            return null;
-        }
-        return url;
     }
 }
