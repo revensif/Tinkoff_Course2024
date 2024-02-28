@@ -2,6 +2,7 @@ package edu.java.client.stackoverflow;
 
 import edu.java.dto.stackoverflow.QuestionResponse;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 public class StackOverflowWebClient implements StackOverflowClient {
 
@@ -20,11 +21,10 @@ public class StackOverflowWebClient implements StackOverflowClient {
     }
 
     @Override
-    public QuestionResponse fetchQuestion(Long id) {
+    public Mono<QuestionResponse> fetchQuestion(Long id) {
         return webClient.get()
             .uri(QUESTION_ENDPOINT, id)
             .retrieve()
-            .bodyToMono(QuestionResponse.class)
-            .block();
+            .bodyToMono(QuestionResponse.class);
     }
 }

@@ -72,7 +72,7 @@ public class StackOverflowWebClientTest {
                 .withBody(RESPONSE_BODY)));
         StackOverflowClient client = new StackOverflowWebClient(wireMockServer.baseUrl());
         //act
-        QuestionResponse response = client.fetchQuestion(QUESTION_ID);
+        QuestionResponse response = client.fetchQuestion(QUESTION_ID).block();
         //assert
         assertThat(response).isEqualTo(EXPECTED_RESPONSE);
     }

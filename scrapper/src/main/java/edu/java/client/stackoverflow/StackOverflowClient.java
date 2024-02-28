@@ -1,7 +1,8 @@
 package edu.java.client.stackoverflow;
 
 import edu.java.dto.stackoverflow.QuestionResponse;
+import reactor.core.publisher.Mono;
 
 public interface StackOverflowClient {
-    QuestionResponse fetchQuestion(Long id);
+    Mono<QuestionResponse> fetchQuestion(Long id);
 }

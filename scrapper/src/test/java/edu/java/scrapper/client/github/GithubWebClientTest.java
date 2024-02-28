@@ -53,7 +53,7 @@ public class GithubWebClientTest {
                 .withBody(RESPONSE_BODY)));
         GithubClient client = new GithubWebClient(wireMockServer.baseUrl());
         //act
-        RepositoryResponse response = client.fetchRepository(OWNER, REPO);
+        RepositoryResponse response = client.fetchRepository(OWNER, REPO).block();
         //assert
         assertThat(response).isEqualTo(EXPECTED_RESPONSE);
     }
