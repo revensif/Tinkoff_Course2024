@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS chat_link
+(
+    chat_id BIGINT REFERENCES chat ON DELETE CASCADE,
+    link_id BIGINT REFERENCES link ON DELETE CASCADE,
+
+    PRIMARY KEY (chat_id, link_id)
+)
