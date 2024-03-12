@@ -27,42 +27,22 @@ public class ScrapperExceptionHandler {
         );
     }
 
-    @ExceptionHandler(ChatNotFoundException.class)
+    @ExceptionHandler({ChatNotFoundException.class, LinkNotFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ApiErrorResponse handleChatNotFoundException(ChatNotFoundException exception) {
+    public ApiErrorResponse handleChatAndLinkNotFoundException(Exception exception) {
         return constructErrorResponse(
-            "Чат не сущесвует",
+            exception.getMessage(),
             String.valueOf(HttpStatus.NOT_FOUND.value()),
             exception
         );
     }
 
-    @ExceptionHandler(ChatAlreadyRegisteredException.class)
+    @ExceptionHandler({ChatAlreadyRegisteredException.class, LinkAlreadyTrackedException.class})
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ApiErrorResponse handleChatAlreadyRegisteredException(ChatAlreadyRegisteredException exception) {
+    public ApiErrorResponse handleChatAndLinkAlreadyRegisteredException(Exception exception) {
         return constructErrorResponse(
-            "Чат уже был зарегестрирован",
+            exception.getMessage(),
             String.valueOf(HttpStatus.CONFLICT.value()),
-            exception
-        );
-    }
-
-    @ExceptionHandler(LinkAlreadyTrackedException.class)
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public ApiErrorResponse handleLinkAlreadyTrackedException(LinkAlreadyTrackedException exception) {
-        return constructErrorResponse(
-            "Ссылка уже отслеживается",
-            String.valueOf(HttpStatus.CONFLICT.value()),
-            exception
-        );
-    }
-
-    @ExceptionHandler(LinkNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ApiErrorResponse handleLinkNotFoundException(LinkNotFoundException exception) {
-        return constructErrorResponse(
-            "Ссылка не сущесвует",
-            String.valueOf(HttpStatus.NOT_FOUND.value()),
             exception
         );
     }

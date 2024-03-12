@@ -24,9 +24,10 @@ public class DefaultHttpScrapperClientTest {
     private static final String CHAT_URL = "/tg-chat/1";
     private static final String LINKS_URL = "/links";
     private static final long ID = 1L;
-    private static final String GITHUB = "https://github.com/revensif/Tinkoff_Course2024";
-    private final LinkResponse firstResponse = new LinkResponse(1L, URI.create("test1.com"));
-    private final LinkResponse secondResponse = new LinkResponse(2L, URI.create("test2.com"));
+    private static final URI FIRST_URI = URI.create("test1.com");
+    private static final URI SECOND_URI = URI.create("test2.com");
+    private final LinkResponse firstResponse = new LinkResponse(1L, FIRST_URI);
+    private final LinkResponse secondResponse = new LinkResponse(2L, SECOND_URI);
 
     @BeforeAll
     public static void beforeAll() {
@@ -158,7 +159,7 @@ public class DefaultHttpScrapperClientTest {
                     """)
             ));
         HttpScrapperClient client = new DefaultHttpScrapperClient(wireMockServer.baseUrl());
-        AddLinkRequest request = new AddLinkRequest("test1.com");
+        AddLinkRequest request = new AddLinkRequest(FIRST_URI);
         //act
         LinkResponse result = client.addLink(ID, request).block();
         //assert
@@ -173,7 +174,7 @@ public class DefaultHttpScrapperClientTest {
                 .withStatus(400)
             ));
         HttpScrapperClient client = new DefaultHttpScrapperClient(wireMockServer.baseUrl());
-        AddLinkRequest request = new AddLinkRequest("test1.com");
+        AddLinkRequest request = new AddLinkRequest(FIRST_URI);
         //act + assert
         assertThrows(WebClientResponseException.BadRequest.class, () -> client.addLink(ID, request).block());
     }
@@ -193,7 +194,7 @@ public class DefaultHttpScrapperClientTest {
                     """)
             ));
         HttpScrapperClient client = new DefaultHttpScrapperClient(wireMockServer.baseUrl());
-        RemoveLinkRequest request = new RemoveLinkRequest("test1.com");
+        RemoveLinkRequest request = new RemoveLinkRequest(FIRST_URI);
         //act
         LinkResponse result = client.deleteLink(ID, request).block();
         //assert
@@ -208,7 +209,7 @@ public class DefaultHttpScrapperClientTest {
                 .withStatus(400)
             ));
         HttpScrapperClient client = new DefaultHttpScrapperClient(wireMockServer.baseUrl());
-        RemoveLinkRequest request = new RemoveLinkRequest("test1.com");
+        RemoveLinkRequest request = new RemoveLinkRequest(FIRST_URI);
         //act + assert
         assertThrows(WebClientResponseException.BadRequest.class, () -> client.deleteLink(ID, request).block());
     }

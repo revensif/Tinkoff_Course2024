@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import edu.java.client.bot.DefaultHttpBotClient;
 import edu.java.client.bot.HttpBotClient;
 import edu.java.dto.request.LinkUpdateRequest;
+import java.net.URI;
 import java.util.ArrayList;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -18,7 +19,7 @@ public class DefaultHttpBotClientTest {
 
     private static WireMockServer wireMockServer;
     private static final String URL = "/updates";
-    private static final String GITHUB = "https://github.com/revensif/Tinkoff_Course2024";
+    private static final URI GITHUB = URI.create("https://github.com/revensif/Tinkoff_Course2024");
     private final LinkUpdateRequest request = new LinkUpdateRequest(
         1L,
         GITHUB,

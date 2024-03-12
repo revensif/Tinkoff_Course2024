@@ -1,11 +1,14 @@
 package edu.java.dto.request;
 
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import java.net.URI;
 import java.util.List;
 
 public record LinkUpdateRequest(
     Long id,
-    String url,
+    @NotNull(message = "The link shouldn't be null") URI url,
     String description,
-    List<Long> tgChatIds
+    @NotEmpty(message = "The chat list should not be empty") List<Long> tgChatIds
 ) {
 }

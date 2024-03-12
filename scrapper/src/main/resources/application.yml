@@ -15,5 +15,8 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
 
+bot:
+  base-url: https://localhost:8090
+
 logging:
   config: classpath:log4j2-plain.xml

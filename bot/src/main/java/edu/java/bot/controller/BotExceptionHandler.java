@@ -17,8 +17,8 @@ public class BotExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiErrorResponse handleIncorrectRequestException(Exception exception) {
         return new ApiErrorResponse(
-            "Неккоректные параметры запроса",
-            String.valueOf(HttpStatus.BAD_REQUEST.value()),
+            "Некорректные параметры запроса",
+            HttpStatus.BAD_REQUEST.toString(),
             exception.getClass().getName(),
             exception.getMessage(),
             Arrays.stream(exception.getStackTrace()).map(Objects::toString).toArray(String[]::new)
