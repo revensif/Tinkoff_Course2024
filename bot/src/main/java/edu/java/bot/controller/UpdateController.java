@@ -1,6 +1,7 @@
 package edu.java.bot.controller;
 
 import edu.java.bot.dto.request.LinkUpdateRequest;
+import edu.java.bot.service.BotService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,8 +13,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/updates")
 public class UpdateController {
 
+    private final BotService botService;
+
+    public UpdateController(BotService botService) {
+        this.botService = botService;
+    }
+
     @PostMapping()
     public ResponseEntity<String> sendUpdate(@RequestBody @Valid LinkUpdateRequest request) {
+        botService.sendUpdate();
         return ResponseEntity.ok("Обновление обработано");
     }
 }

@@ -4,25 +4,23 @@ import edu.java.bot.dto.request.AddLinkRequest;
 import edu.java.bot.dto.request.RemoveLinkRequest;
 import edu.java.bot.dto.response.LinkResponse;
 import edu.java.bot.dto.response.ListLinksResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
+import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+@Component
 public class DefaultHttpScrapperClient implements HttpScrapperClient {
 
-    private static final String BASE_URL = "https://localhost:8080";
     private static final String HEADER = "Tg-Chat-Id";
     private static final String LINKS_ENDPOINT = "/links";
     private static final String TG_CHAT_ENDPOINT = "/tg-chat/{id}";
 
     private final WebClient webClient;
 
-    public DefaultHttpScrapperClient() {
-        this(BASE_URL);
-    }
-
-    public DefaultHttpScrapperClient(String baseUrl) {
+    public DefaultHttpScrapperClient(@Value("${scrapper.base-url}") String baseUrl) {
         this.webClient = WebClient.builder()
             .baseUrl(baseUrl)
             .build();

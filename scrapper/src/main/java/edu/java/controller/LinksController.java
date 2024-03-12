@@ -4,8 +4,8 @@ import edu.java.dto.request.AddLinkRequest;
 import edu.java.dto.request.RemoveLinkRequest;
 import edu.java.dto.response.LinkResponse;
 import edu.java.dto.response.ListLinksResponse;
+import edu.java.service.LinksService;
 import jakarta.validation.Valid;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -20,21 +20,30 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/links")
 public class LinksController {
 
+    private final LinksService linksService;
+
+    public LinksController(LinksService linksService) {
+        this.linksService = linksService;
+    }
+
     private static final String HEADER = "Tg-Chat-Id";
 
     @GetMapping
     public ListLinksResponse getAllLinks(@RequestHeader(HEADER) Long id) {
+        linksService.getAllLinks();
         List<LinkResponse> links = new ArrayList<>();
         return new ListLinksResponse(links, links.size());
     }
 
     @PostMapping
     public LinkResponse addLink(@RequestHeader(HEADER) Long id, @RequestBody @Valid AddLinkRequest request) {
-        return new LinkResponse(id, URI.create(request.link()));
+        linksService.addLink();
+        return new LinkResponse(id, request.url());
     }
 
     @DeleteMapping
     public LinkResponse deleteLink(@RequestHeader(HEADER) Long id, @RequestBody @Valid RemoveLinkRequest request) {
-        return new LinkResponse(id, URI.create(request.link()));
+        linksService.deleteLink();
+        return new LinkResponse(id, request.url());
     }
 }

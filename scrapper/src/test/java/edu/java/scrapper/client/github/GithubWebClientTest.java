@@ -4,6 +4,8 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import edu.java.client.github.GithubClient;
 import edu.java.client.github.GithubWebClient;
 import edu.java.dto.github.RepositoryResponse;
+
+import java.net.URI;
 import java.time.OffsetDateTime;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -29,7 +31,7 @@ public class GithubWebClientTest {
         """;
     private static final RepositoryResponse EXPECTED_RESPONSE = new RepositoryResponse(
         182783L,
-        "https://github.com/revensif/Tinkoff_Course2024",
+        URI.create("https://github.com/revensif/Tinkoff_Course2024"),
         OffsetDateTime.parse("2024-02-23T16:23:19Z")
     );
 
