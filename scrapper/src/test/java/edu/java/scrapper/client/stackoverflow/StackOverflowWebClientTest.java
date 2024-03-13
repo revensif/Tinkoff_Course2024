@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import edu.java.client.stackoverflow.StackOverflowClient;
 import edu.java.client.stackoverflow.StackOverflowWebClient;
 import edu.java.dto.stackoverflow.QuestionResponse;
+import java.net.URI;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -43,7 +44,7 @@ public class StackOverflowWebClientTest {
         List.of(
             new QuestionResponse.ItemResponse(
                 QUESTION_ID,
-                "https://stackoverflow.com/questions/12345/test_for_hw2",
+                URI.create("https://stackoverflow.com/questions/12345/test_for_hw2"),
                 OffsetDateTime.ofInstant(
                     Instant.ofEpochSecond(1708698398L),
                     ZoneOffset.UTC
