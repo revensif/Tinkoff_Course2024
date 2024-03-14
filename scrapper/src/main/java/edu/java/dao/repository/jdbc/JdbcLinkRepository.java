@@ -4,6 +4,8 @@ import edu.java.dao.repository.LinkRepository;
 import edu.java.dao.repository.mapper.LinkRowMapper;
 import edu.java.dto.Link;
 import java.net.URI;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -19,36 +21,25 @@ public class JdbcLinkRepository implements LinkRepository {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public Link add(long tgChatId, URI url) {
+    public Link add(URI url) {
         jdbcTemplate.update(
-            "INSERT INTO link VALUES (?, ?, ?)",
-            tgChatId,
+            "INSERT INTO link (url, updated_at) VALUES (?, ?)",
             url.toString(),
             OffsetDateTime.MIN.truncatedTo(ChronoUnit.MILLIS)
         );
-        return new Link(tgChatId, url, OffsetDateTime.MIN);
+        return findByUri(url);
     }
 
     @Override
-    public Link remove(long tgChatId, URI url) {
+    public Link remove(URI url) {
         Link link = findByUri(url);
-        jdbcTemplate.update("DELETE FROM link WHERE link_id = ? AND url = ?", tgChatId, url.toString());
+        jdbcTemplate.update("DELETE FROM link WHERE url = ?", url.toString());
         return link;
     }
 
     @Override
     public List<Link> findAll() {
         return jdbcTemplate.query("SELECT * FROM link", new LinkRowMapper());
-    }
-
-    @Override
-    public Link findById(long tgChatId) {
-        try {
-            return jdbcTemplate.queryForObject(
-                "SELECT * FROM link WHERE link_id = ?", new LinkRowMapper(), tgChatId);
-        } catch (EmptyResultDataAccessException exception) {
-            return null;
-        }
     }
 
     @Override
@@ -67,5 +58,11 @@ public class JdbcLinkRepository implements LinkRepository {
             return;
         }
         jdbcTemplate.update("UPDATE link SET updated_at = ? WHERE url = ?", updatedAt, url.toString());
+    }
+
+    @Override
+    public List<Link> findOutdatedLinks(Duration threshold) {
+        OffsetDateTime thresholdTime = LocalDateTime.now().minus(threshold).atOffset(OffsetDateTime.now().getOffset());
+        return jdbcTemplate.query("SELECT * FROM link WHERE updated_at < ?", new LinkRowMapper(), thresholdTime);
     }
 }

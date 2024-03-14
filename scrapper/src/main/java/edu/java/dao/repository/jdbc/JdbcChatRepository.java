@@ -18,13 +18,14 @@ public class JdbcChatRepository implements ChatRepository {
     @Override
     public Chat add(long tgChatId) {
         jdbcTemplate.update("INSERT INTO chat VALUES (?)", tgChatId);
-        return new Chat(tgChatId);
+        return findById(tgChatId);
     }
 
     @Override
     public Chat remove(long tgChatId) {
+        Chat removedChat = findById(tgChatId);
         jdbcTemplate.update("DELETE FROM chat WHERE chat_id = ?", tgChatId);
-        return new Chat(tgChatId);
+        return removedChat;
     }
 
     @Override

@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS link
 (
-    link_id    BIGINT,
+    link_id    BIGSERIAL,
     url        TEXT NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE,
 

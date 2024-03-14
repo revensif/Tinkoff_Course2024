@@ -6,6 +6,8 @@ import edu.java.dao.repository.jdbc.JdbcLinkRepository;
 import edu.java.dto.ChatLink;
 import edu.java.scrapper.IntegrationTest;
 import java.net.URI;
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +24,7 @@ public class JdbcChatLinkRepositoryTest extends IntegrationTest {
     private static final long SECOND_ID = 2L;
     private static final URI FIRST_URL = URI.create("link1.com");
     private static final URI SECOND_URL = URI.create("link2.com");
-    private static final ChatLink FIRST_CHAT_LINK = new ChatLink(FIRST_ID, SECOND_ID);
-    private static final ChatLink SECOND_CHAT_LINK = new ChatLink(SECOND_ID, FIRST_ID);
+    private static final OffsetDateTime CURRENT_TIME = OffsetDateTime.now().truncatedTo(ChronoUnit.MILLIS);
 
     @Autowired
     private JdbcChatRepository chatRepository;
@@ -41,11 +42,13 @@ public class JdbcChatLinkRepositoryTest extends IntegrationTest {
     @Transactional
     @Rollback
     public void shouldAddChatLinkToDatabase() {
+        //arrange
         assertThat(chatLinkRepository.findAll().size()).isEqualTo(0);
-        addChatsAndLinksToDatabase();
-        chatLinkRepository.add(FIRST_ID, SECOND_ID);
+        addChatsAndLinksToDatabaseAndGetLinkIds();
+        //act + assert
+        chatLinkRepository.add(SECOND_ID, linkRepository.findByUri(FIRST_URL).getLinkId());
         assertThat(chatLinkRepository.findAll().size()).isEqualTo(1);
-        chatLinkRepository.add(SECOND_ID, FIRST_ID);
+        chatLinkRepository.add(FIRST_ID, linkRepository.findByUri(SECOND_URL).getLinkId());
         assertThat(chatLinkRepository.findAll().size()).isEqualTo(2);
     }
 
@@ -53,13 +56,13 @@ public class JdbcChatLinkRepositoryTest extends IntegrationTest {
     @Transactional
     @Rollback
     public void shouldRemoveChatLinkFromDatabase() {
-        addChatsAndLinksToDatabase();
-        chatLinkRepository.add(FIRST_ID, SECOND_ID);
-        chatLinkRepository.add(SECOND_ID, FIRST_ID);
+        //arrange
+        long[] linkIds = prepareDatabase();
+        //act + assert
         assertThat(chatLinkRepository.findAll().size()).isEqualTo(2);
-        chatLinkRepository.remove(FIRST_ID, SECOND_ID);
+        chatLinkRepository.remove(SECOND_ID, linkIds[0]);
         assertThat(chatLinkRepository.findAll().size()).isEqualTo(1);
-        chatLinkRepository.remove(SECOND_ID, FIRST_ID);
+        chatLinkRepository.remove(FIRST_ID, linkIds[1]);
         assertThat(chatLinkRepository.findAll().size()).isEqualTo(0);
     }
 
@@ -67,22 +70,31 @@ public class JdbcChatLinkRepositoryTest extends IntegrationTest {
     @Transactional
     @Rollback
     public void shouldFindAllChatLinksFromDatabase() {
-        addChatsAndLinksToDatabase();
-        chatLinkRepository.add(FIRST_ID, SECOND_ID);
-        chatLinkRepository.add(SECOND_ID, FIRST_ID);
+        //arrange
+        long[] linkIds = prepareDatabase();
+        //act + assert
         assertThat(chatLinkRepository.findAll().size()).isEqualTo(2);
-        assertThat(chatLinkRepository.findAll()).isEqualTo(List.of(FIRST_CHAT_LINK, SECOND_CHAT_LINK));
+        assertThat(chatLinkRepository.findAll()).isEqualTo(List.of(
+            new ChatLink(SECOND_ID, linkIds[0]),
+            new ChatLink(FIRST_ID, linkIds[1])
+        ));
     }
 
     @Test
     @Transactional
     @Rollback
     public void shouldFindChatLinkByIdsFromDatabase() {
-        addChatsAndLinksToDatabase();
-        chatLinkRepository.add(FIRST_ID, SECOND_ID);
-        chatLinkRepository.add(SECOND_ID, FIRST_ID);
-        assertThat(chatLinkRepository.findByChatAndLinkIds(FIRST_ID, SECOND_ID)).isEqualTo(FIRST_CHAT_LINK);
-        assertThat(chatLinkRepository.findByChatAndLinkIds(SECOND_ID, FIRST_ID)).isEqualTo(SECOND_CHAT_LINK);
+        //arrange
+        long[] linkIds = prepareDatabase();
+        //act + assert
+        assertThat(chatLinkRepository.findByChatAndLinkIds(SECOND_ID, linkIds[0])).isEqualTo(new ChatLink(
+            SECOND_ID,
+            linkIds[0]
+        ));
+        assertThat(chatLinkRepository.findByChatAndLinkIds(FIRST_ID, linkIds[1])).isEqualTo(new ChatLink(
+            FIRST_ID,
+            linkIds[1]
+        ));
         assertThat(chatLinkRepository.findByChatAndLinkIds(FIRST_ID, FIRST_ID)).isNull();
     }
 
@@ -90,11 +102,11 @@ public class JdbcChatLinkRepositoryTest extends IntegrationTest {
     @Transactional
     @Rollback
     public void shouldFindAllChatsThatTrackThisLink() {
-        addChatsAndLinksToDatabase();
-        chatLinkRepository.add(FIRST_ID, SECOND_ID);
-        chatLinkRepository.add(SECOND_ID, FIRST_ID);
-        assertThat(chatLinkRepository.findAllChatsThatTrackThisLink(FIRST_ID).size()).isEqualTo(1);
-        assertThat(chatLinkRepository.findAllChatsThatTrackThisLink(FIRST_ID)).isEqualTo(List.of(SECOND_CHAT_LINK));
+        //arrange
+        long[] linkIds = prepareDatabase();
+        //act + assert
+        assertThat(chatLinkRepository.findAllChatsThatTrackThisLink(linkIds[0]).size()).isEqualTo(1);
+        assertThat(chatLinkRepository.findAllChatsThatTrackThisLink(linkIds[0])).isEqualTo(List.of(SECOND_ID));
         assertThat(chatLinkRepository.findAllChatsThatTrackThisLink(0)).isEmpty();
     }
 
@@ -102,18 +114,31 @@ public class JdbcChatLinkRepositoryTest extends IntegrationTest {
     @Transactional
     @Rollback
     public void shouldFindAllLinksTrackedByThisChat() {
-        addChatsAndLinksToDatabase();
-        chatLinkRepository.add(FIRST_ID, SECOND_ID);
-        chatLinkRepository.add(SECOND_ID, FIRST_ID);
+        //assert
+        long[] linkIds = prepareDatabase();
+        //act + assert
         assertThat(chatLinkRepository.findAllLinksTrackedByThisChat(FIRST_ID).size()).isEqualTo(1);
-        assertThat(chatLinkRepository.findAllLinksTrackedByThisChat(FIRST_ID)).isEqualTo(List.of(FIRST_CHAT_LINK));
+        assertThat(chatLinkRepository.findAllLinksTrackedByThisChat(FIRST_ID)).isEqualTo(
+            List.of(linkRepository.findByUri(SECOND_URL)));
         assertThat(chatLinkRepository.findAllLinksTrackedByThisChat(0)).isEmpty();
     }
 
-    private void addChatsAndLinksToDatabase() {
+    private long[] addChatsAndLinksToDatabaseAndGetLinkIds() {
         chatRepository.add(FIRST_ID);
         chatRepository.add(SECOND_ID);
-        linkRepository.add(FIRST_ID, FIRST_URL);
-        linkRepository.add(SECOND_ID, SECOND_URL);
+        linkRepository.add(FIRST_URL);
+        linkRepository.add(SECOND_URL);
+        linkRepository.changeUpdatedAt(FIRST_URL, CURRENT_TIME);
+        linkRepository.changeUpdatedAt(SECOND_URL, CURRENT_TIME);
+        return new long[] {linkRepository.findByUri(FIRST_URL).getLinkId(),
+            linkRepository.findByUri(SECOND_URL).getLinkId()};
+
+    }
+
+    private long[] prepareDatabase() {
+        long[] linkIds = addChatsAndLinksToDatabaseAndGetLinkIds();
+        chatLinkRepository.add(SECOND_ID, linkIds[0]);
+        chatLinkRepository.add(FIRST_ID, linkIds[1]);
+        return linkIds;
     }
 }
