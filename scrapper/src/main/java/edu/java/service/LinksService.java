@@ -1,19 +1,14 @@
 package edu.java.service;
 
-import org.springframework.stereotype.Service;
+import edu.java.dto.Link;
+import java.net.URI;
+import java.util.List;
 
-@Service
-public class LinksService {
+public interface LinksService {
 
-    public String getAllLinks() {
-        return "All links have been requested";
-    }
+    Link add(long tgChatId, URI url);
 
-    public String addLink() {
-        return "The link has been added";
-    }
+    Link remove(long tgChatId, URI url);
 
-    public String deleteLink() {
-        return "The link has been deleted";
-    }
+    List<Link> listAll(long tgChatId);
 }
