@@ -1,14 +1,15 @@
 package edu.java.service;
 
-import edu.java.dto.Link;
-import java.net.URI;
-import java.util.List;
+import edu.java.dto.request.AddLinkRequest;
+import edu.java.dto.request.RemoveLinkRequest;
+import edu.java.dto.response.LinkResponse;
+import edu.java.dto.response.ListLinksResponse;
 
 public interface LinksService {
 
-    Link add(long tgChatId, URI url);
+    LinkResponse add(long tgChatId, AddLinkRequest request);
 
-    Link remove(long tgChatId, URI url);
+    LinkResponse remove(long tgChatId, RemoveLinkRequest request);
 
-    List<Link> listAll(long tgChatId);
+    ListLinksResponse listAll(long tgChatId);
 }

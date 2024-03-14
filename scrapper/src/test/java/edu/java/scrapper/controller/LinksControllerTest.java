@@ -5,10 +5,13 @@ import com.fasterxml.jackson.annotation.PropertyAccessor;
 import edu.java.controller.LinksController;
 import edu.java.dto.request.AddLinkRequest;
 import edu.java.dto.request.RemoveLinkRequest;
+import edu.java.dto.response.LinkResponse;
+import edu.java.dto.response.ListLinksResponse;
 import edu.java.exception.LinkAlreadyTrackedException;
 import edu.java.exception.LinkNotFoundException;
 import edu.java.service.LinksService;
 import java.net.URI;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,18 +53,28 @@ public class LinksControllerTest {
 
     @Test
     void shouldGetAllLinksAndReturnOkStatus() throws Exception {
+        //assert
+        ListLinksResponse expected = new ListLinksResponse(
+            List.of(new LinkResponse(CHAT_ID, LINK_URL)),
+            1
+        );
+        when(linksService.listAll(CHAT_ID)).thenReturn(expected);
+        //act + arrange
         mockMvc.perform(get(URL)
                 .header(HEADER, CHAT_ID))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.links").isEmpty())
-            .andExpect(jsonPath("$.size").value(0));
+            .andExpect(jsonPath("$.links[0].id").value(CHAT_ID))
+            .andExpect(jsonPath("$.links[0].url").value(LINK_URL.toString()))
+            .andExpect(jsonPath("$.size").value(1));
     }
 
     @Test
     void shouldAddLinkAndReturnOkStatus() throws Exception {
         //arrange
+        LinkResponse expected = new LinkResponse(CHAT_ID, LINK_URL);
         AddLinkRequest addLinkRequest = new AddLinkRequest(LINK_URL);
         String requestJson = objectMapper.writeValueAsString(addLinkRequest);
+        when(linksService.add(CHAT_ID, addLinkRequest)).thenReturn(expected);
         //act + assert
         mockMvc.perform(post(URL)
                 .header(HEADER, CHAT_ID)
@@ -75,8 +88,10 @@ public class LinksControllerTest {
     @Test
     void shouldRemoveLinkAndReturnOkStatus() throws Exception {
         //arrange
+        LinkResponse expected = new LinkResponse(CHAT_ID, LINK_URL);
         RemoveLinkRequest removeLinkRequest = new RemoveLinkRequest(LINK_URL);
         String requestJson = objectMapper.writeValueAsString(removeLinkRequest);
+        when(linksService.remove(CHAT_ID, removeLinkRequest)).thenReturn(expected);
         //act + assert
         mockMvc.perform(delete(URL)
                 .header(HEADER, CHAT_ID)
@@ -92,7 +107,7 @@ public class LinksControllerTest {
         //arrange
         AddLinkRequest addLinkRequest = new AddLinkRequest(LINK_URL);
         String requestJson = objectMapper.writeValueAsString(addLinkRequest);
-        when(linksService.add(CHAT_ID, LINK_URL)).thenThrow(LinkAlreadyTrackedException.class);
+        when(linksService.add(CHAT_ID, addLinkRequest)).thenThrow(LinkAlreadyTrackedException.class);
         //act + assert
         mockMvc.perform(post(URL)
                 .header(HEADER, CHAT_ID)
@@ -107,7 +122,7 @@ public class LinksControllerTest {
         //arrange
         RemoveLinkRequest removeLinkRequest = new RemoveLinkRequest(LINK_URL);
         String requestJson = objectMapper.writeValueAsString(removeLinkRequest);
-        when(linksService.remove(CHAT_ID, LINK_URL)).thenThrow(LinkNotFoundException.class);
+        when(linksService.remove(CHAT_ID, removeLinkRequest)).thenThrow(LinkNotFoundException.class);
         //act + assert
         mockMvc.perform(delete(URL)
                 .header(HEADER, CHAT_ID)

@@ -3,6 +3,7 @@ package edu.java.scrapper.client.stackoverflow;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import edu.java.client.stackoverflow.StackOverflowClient;
 import edu.java.client.stackoverflow.StackOverflowWebClient;
+import edu.java.dto.Link;
 import edu.java.dto.stackoverflow.QuestionResponse;
 import java.net.URI;
 import java.time.Instant;
@@ -18,8 +19,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class StackOverflowWebClientTest {
 
+    private static final URI LINK_URL = URI.create("https://stackoverflow.com/questions/12345/test_for_hw2");
     private static final String URL = "/questions/12345?site=stackoverflow";
     private static final Long QUESTION_ID = 12345L;
+    private static final OffsetDateTime DATE_TIME =
+        OffsetDateTime.ofInstant(Instant.ofEpochSecond(1708698398L), ZoneOffset.UTC);
+    private static final Link LINK = new Link(QUESTION_ID, LINK_URL, DATE_TIME);
     private static WireMockServer wireMockServer;
     private static final String RESPONSE_BODY = """
         {
@@ -44,11 +49,8 @@ public class StackOverflowWebClientTest {
         List.of(
             new QuestionResponse.ItemResponse(
                 QUESTION_ID,
-                URI.create("https://stackoverflow.com/questions/12345/test_for_hw2"),
-                OffsetDateTime.ofInstant(
-                    Instant.ofEpochSecond(1708698398L),
-                    ZoneOffset.UTC
-                )
+                LINK_URL,
+                DATE_TIME
             )
         )
     );
@@ -57,6 +59,10 @@ public class StackOverflowWebClientTest {
     public static void beforeAll() {
         wireMockServer = new WireMockServer();
         wireMockServer.start();
+        wireMockServer.stubFor(get(URL)
+            .willReturn(aResponse()
+                .withHeader("Content-Type", "application/json")
+                .withBody(RESPONSE_BODY)));
     }
 
     @AfterAll
@@ -67,14 +73,20 @@ public class StackOverflowWebClientTest {
     @Test
     public void shouldFetchRepository() {
         //arrange
-        wireMockServer.stubFor(get(URL)
-            .willReturn(aResponse()
-                .withHeader("Content-Type", "application/json")
-                .withBody(RESPONSE_BODY)));
         StackOverflowClient client = new StackOverflowWebClient(wireMockServer.baseUrl());
         //act
         QuestionResponse response = client.fetchQuestion(QUESTION_ID).block();
         //assert
         assertThat(response).isEqualTo(EXPECTED_RESPONSE);
+    }
+
+    @Test
+    public void shouldGetUpdatedAt() {
+        //arrange
+        StackOverflowClient client = new StackOverflowWebClient(wireMockServer.baseUrl());
+        //act
+        OffsetDateTime updatedAt = client.getUpdatedAt(LINK);
+        //assert
+        assertThat(updatedAt).isEqualTo(DATE_TIME);
     }
 }

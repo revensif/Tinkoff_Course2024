@@ -6,6 +6,7 @@ import edu.java.controller.TgChatController;
 import edu.java.exception.ChatAlreadyRegisteredException;
 import edu.java.exception.ChatNotFoundException;
 import edu.java.service.TgChatService;
+import edu.java.service.jdbc.JdbcTgChatService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,7 +70,7 @@ public class TgChatControllerTest {
         //arrange
         when(tgChatService.unregister(CHAT_ID)).thenThrow(ChatNotFoundException.class);
         //act + assert
-        mockMvc.perform(post(URL))
+        mockMvc.perform(delete(URL))
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.description").value("Чат не существует"));
     }

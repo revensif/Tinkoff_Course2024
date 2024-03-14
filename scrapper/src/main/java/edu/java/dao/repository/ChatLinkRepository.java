@@ -1,6 +1,7 @@
 package edu.java.dao.repository;
 
 import edu.java.dto.ChatLink;
+import edu.java.dto.Link;
 import java.util.List;
 
 public interface ChatLinkRepository {
@@ -13,7 +14,7 @@ public interface ChatLinkRepository {
 
     ChatLink findByChatAndLinkIds(long tgChatId, long linkId);
 
-    List<ChatLink> findAllChatsThatTrackThisLink(long linkId);
+    List<Long> findAllChatsThatTrackThisLink(long linkId);
 
-    List<ChatLink> findAllLinksTrackedByThisChat(long tgChatId);
+    List<Link> findAllLinksTrackedByThisChat(long tgChatId);
 }
