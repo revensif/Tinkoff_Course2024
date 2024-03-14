@@ -30,20 +30,20 @@ public class LinksController {
 
     @GetMapping
     public ListLinksResponse getAllLinks(@RequestHeader(HEADER) Long id) {
-        linksService.getAllLinks();
+        linksService.listAll(id);
         List<LinkResponse> links = new ArrayList<>();
         return new ListLinksResponse(links, links.size());
     }
 
     @PostMapping
     public LinkResponse addLink(@RequestHeader(HEADER) Long id, @RequestBody @Valid AddLinkRequest request) {
-        linksService.addLink();
+        linksService.add(id, request.url());
         return new LinkResponse(id, request.url());
     }
 
     @DeleteMapping
     public LinkResponse deleteLink(@RequestHeader(HEADER) Long id, @RequestBody @Valid RemoveLinkRequest request) {
-        linksService.deleteLink();
+        linksService.remove(id, request.url());
         return new LinkResponse(id, request.url());
     }
 }

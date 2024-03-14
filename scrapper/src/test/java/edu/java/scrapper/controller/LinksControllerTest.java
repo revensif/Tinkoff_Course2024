@@ -92,7 +92,7 @@ public class LinksControllerTest {
         //arrange
         AddLinkRequest addLinkRequest = new AddLinkRequest(LINK_URL);
         String requestJson = objectMapper.writeValueAsString(addLinkRequest);
-        when(linksService.addLink()).thenThrow(LinkAlreadyTrackedException.class);
+        when(linksService.add(CHAT_ID, LINK_URL)).thenThrow(LinkAlreadyTrackedException.class);
         //act + assert
         mockMvc.perform(post(URL)
                 .header(HEADER, CHAT_ID)
@@ -107,7 +107,7 @@ public class LinksControllerTest {
         //arrange
         RemoveLinkRequest removeLinkRequest = new RemoveLinkRequest(LINK_URL);
         String requestJson = objectMapper.writeValueAsString(removeLinkRequest);
-        when(linksService.deleteLink()).thenThrow(LinkNotFoundException.class);
+        when(linksService.remove(CHAT_ID, LINK_URL)).thenThrow(LinkNotFoundException.class);
         //act + assert
         mockMvc.perform(delete(URL)
                 .header(HEADER, CHAT_ID)

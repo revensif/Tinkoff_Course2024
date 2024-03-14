@@ -7,7 +7,7 @@ import edu.java.dto.ChatLink;
 import edu.java.dto.Link;
 import edu.java.exception.LinkAlreadyTrackedException;
 import edu.java.exception.LinkNotFoundException;
-import edu.java.service.LinkService;
+import edu.java.service.LinksService;
 import java.net.URI;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class JdbcLinkService implements LinkService {
+public class JdbcLinkService implements LinksService {
 
     private final JdbcChatRepository chatRepository;
     private final JdbcLinkRepository linkRepository;
@@ -27,7 +27,7 @@ public class JdbcLinkService implements LinkService {
     public Link add(long tgChatId, URI url) {
         Link link = linkRepository.findByUri(url);
         if ((link != null) && (chatLinkRepository.findByChatAndLinkIds(tgChatId, link.getLinkId()) != null)) {
-            throw new LinkAlreadyTrackedException("This link is already tracked!");
+            throw new LinkAlreadyTrackedException();
         } else if (link == null) {
             link = linkRepository.findByUri(url);
             linkRepository.add(tgChatId, url);
@@ -41,7 +41,7 @@ public class JdbcLinkService implements LinkService {
     public Link remove(long tgChatId, URI url) {
         Link link = linkRepository.findByUri(url);
         if ((link == null) || (chatLinkRepository.findByChatAndLinkIds(tgChatId, link.getLinkId()) == null)) {
-            throw new LinkNotFoundException("This link is already not tracked!");
+            throw new LinkNotFoundException();
         }
         chatLinkRepository.remove(tgChatId, link.getLinkId());
         for (ChatLink chatLink : chatLinkRepository.findAll()) {
