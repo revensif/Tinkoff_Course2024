@@ -30,7 +30,10 @@ public class JdbcTgChatServiceTest {
     private JdbcChatRepository chatRepository;
 
     @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private JdbcTemplate firstJdbcTemplate;
+
+    @Autowired
+    private JdbcTemplate secondJdbcTemplate;
 
     @Test
     @Transactional
