@@ -31,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(LinksController.class)
 @AutoConfigureMockMvc
-public class LinksControllerTest extends IntegrationTest {
+public class LinksControllerTest {
 
     private static final String HEADER = "Tg-Chat-Id";
     private static final String URL = "/links";

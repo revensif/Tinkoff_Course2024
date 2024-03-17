@@ -25,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(TgChatController.class)
 @AutoConfigureMockMvc
-public class TgChatControllerTest extends IntegrationTest {
+public class TgChatControllerTest {
 
     private static final String URL = "/tg-chat/1";
     private static final Long CHAT_ID = 1L;
