@@ -4,6 +4,7 @@ import edu.java.dao.repository.jdbc.JdbcChatRepository;
 import edu.java.dto.Chat;
 import edu.java.exception.ChatAlreadyRegisteredException;
 import edu.java.exception.ChatNotFoundException;
+import edu.java.scrapper.IntegrationTest;
 import edu.java.service.jdbc.JdbcTgChatService;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -16,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
-public class JdbcTgChatServiceTest {
+public class JdbcTgChatServiceTest extends IntegrationTest {
 
     private static final long FIRST_ID = 1L;
     private static final long SECOND_ID = 2L;

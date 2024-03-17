@@ -6,6 +6,7 @@ import edu.java.client.stackoverflow.StackOverflowClient;
 import edu.java.dao.repository.jdbc.JdbcChatLinkRepository;
 import edu.java.dao.repository.jdbc.JdbcLinkRepository;
 import edu.java.dto.Link;
+import edu.java.scrapper.IntegrationTest;
 import edu.java.service.jdbc.JdbcLinkUpdater;
 import java.net.URI;
 import java.time.Duration;
@@ -23,7 +24,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class JdbcLinkUpdaterTest {
+public class JdbcLinkUpdaterTest extends IntegrationTest {
 
     private static final long FIRST_ID = 1L;
     private static final long SECOND_ID = 2L;
