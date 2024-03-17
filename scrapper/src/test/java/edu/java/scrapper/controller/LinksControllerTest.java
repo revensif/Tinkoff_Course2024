@@ -9,6 +9,7 @@ import edu.java.dto.response.LinkResponse;
 import edu.java.dto.response.ListLinksResponse;
 import edu.java.exception.LinkAlreadyTrackedException;
 import edu.java.exception.LinkNotFoundException;
+import edu.java.scrapper.IntegrationTest;
 import edu.java.service.LinksService;
 import java.net.URI;
 import java.util.List;
@@ -30,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(LinksController.class)
 @AutoConfigureMockMvc
-public class LinksControllerTest {
+public class LinksControllerTest extends IntegrationTest {
 
     private static final String HEADER = "Tg-Chat-Id";
     private static final String URL = "/links";

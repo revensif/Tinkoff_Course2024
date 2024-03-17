@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.PropertyAccessor;
 import edu.java.controller.TgChatController;
 import edu.java.exception.ChatAlreadyRegisteredException;
 import edu.java.exception.ChatNotFoundException;
+import edu.java.scrapper.IntegrationTest;
 import edu.java.service.TgChatService;
 import edu.java.service.jdbc.JdbcTgChatService;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(TgChatController.class)
 @AutoConfigureMockMvc
-public class TgChatControllerTest {
+public class TgChatControllerTest extends IntegrationTest {
 
     private static final String URL = "/tg-chat/1";
     private static final Long CHAT_ID = 1L;
