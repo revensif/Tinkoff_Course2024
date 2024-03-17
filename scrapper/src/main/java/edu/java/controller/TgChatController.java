@@ -20,13 +20,13 @@ public class TgChatController {
 
     @PostMapping("/{id}")
     public ResponseEntity<String> registerChat(@PathVariable("id") Long id) {
-        tgChatService.registerChat();
+        tgChatService.register(id);
         return ResponseEntity.ok("Чат зарегистрирован");
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteChat(@PathVariable("id") Long id) {
-        tgChatService.unregisterChat();
+        tgChatService.unregister(id);
         return ResponseEntity.ok("Чат успешно удален");
     }
 }

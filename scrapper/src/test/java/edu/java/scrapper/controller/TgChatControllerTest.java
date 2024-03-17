@@ -6,7 +6,7 @@ import edu.java.controller.TgChatController;
 import edu.java.exception.ChatAlreadyRegisteredException;
 import edu.java.exception.ChatNotFoundException;
 import edu.java.service.TgChatService;
-import java.net.URI;
+import edu.java.service.jdbc.JdbcTgChatService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +28,6 @@ public class TgChatControllerTest {
 
     private static final String URL = "/tg-chat/1";
     private static final Long CHAT_ID = 1L;
-    private static final URI LINK_URL = URI.create("link1.com");
 
     @Autowired
     private MockMvc mockMvc;
@@ -59,7 +58,7 @@ public class TgChatControllerTest {
     @Test
     void shouldRegisterChatAndReturnConflictStatus() throws Exception {
         //arrange
-        when(tgChatService.registerChat()).thenThrow(ChatAlreadyRegisteredException.class);
+        when(tgChatService.register(CHAT_ID)).thenThrow(ChatAlreadyRegisteredException.class);
         //act + assert
         mockMvc.perform(post(URL))
             .andExpect(status().isConflict())
@@ -69,9 +68,9 @@ public class TgChatControllerTest {
     @Test
     void shouldUnregisterChatAndReturnNotFoundStatus() throws Exception {
         //arrange
-        when(tgChatService.registerChat()).thenThrow(ChatNotFoundException.class);
+        when(tgChatService.unregister(CHAT_ID)).thenThrow(ChatNotFoundException.class);
         //act + assert
-        mockMvc.perform(post(URL))
+        mockMvc.perform(delete(URL))
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.description").value("Чат не существует"));
     }
