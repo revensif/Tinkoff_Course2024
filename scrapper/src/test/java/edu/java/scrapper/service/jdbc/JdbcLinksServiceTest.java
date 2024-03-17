@@ -1,8 +1,10 @@
 package edu.java.scrapper.service.jdbc;
 
+import edu.java.client.stackoverflow.StackOverflowClient;
 import edu.java.dao.repository.jdbc.JdbcChatLinkRepository;
 import edu.java.dao.repository.jdbc.JdbcChatRepository;
 import edu.java.dao.repository.jdbc.JdbcLinkRepository;
+import edu.java.dao.repository.jdbc.JdbcQuestionRepository;
 import edu.java.dto.request.AddLinkRequest;
 import edu.java.dto.request.RemoveLinkRequest;
 import edu.java.dto.response.LinkResponse;
@@ -27,8 +29,14 @@ public class JdbcLinksServiceTest extends IntegrationTest {
 
     private static final long FIRST_ID = 1L;
     private static final long SECOND_ID = 2L;
-    private static final URI FIRST_URL = URI.create("link1.com");
-    private static final URI SECOND_URL = URI.create("link2.com");
+    private static final URI FIRST_URL = URI.create("https://github.com");
+    private static final URI SECOND_URL = URI.create("https://link1.com");
+
+    @Autowired
+    private StackOverflowClient stackOverflowClient;
+
+    @Autowired
+    private JdbcQuestionRepository questionRepository;
 
     @Autowired
     private JdbcLinksService linksService;
@@ -101,6 +109,7 @@ public class JdbcLinksServiceTest extends IntegrationTest {
         AddLinkRequest secondAddRequest = new AddLinkRequest(SECOND_URL);
         chatRepository.add(FIRST_ID);
         chatRepository.add(SECOND_ID);
+
         assertThat(linksService.listAll(FIRST_ID).size()).isEqualTo(0);
         linksService.add(FIRST_ID, firstAddRequest);
         assertThat(linksService.listAll(FIRST_ID).size()).isEqualTo(1);

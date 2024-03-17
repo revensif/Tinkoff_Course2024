@@ -25,9 +25,9 @@ public class JdbcChatLinkRepository implements ChatLinkRepository {
 
     @Override
     public ChatLink remove(long tgChatId, long linkId) {
-        ChatLink chatLink = findByChatAndLinkIds(tgChatId, linkId);
+        ChatLink removedChatLink = findByChatAndLinkIds(tgChatId, linkId);
         jdbcTemplate.update("DELETE FROM chat_link WHERE chat_id = ? AND link_id = ?", tgChatId, linkId);
-        return chatLink;
+        return removedChatLink;
     }
 
     @Override

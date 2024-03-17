@@ -1,6 +1,7 @@
 package edu.java.controller;
 
 import edu.java.service.TgChatService;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,7 +15,7 @@ public class TgChatController {
 
     private final TgChatService tgChatService;
 
-    public TgChatController(TgChatService tgChatService) {
+    public TgChatController(@Qualifier("jdbcTgChatService") TgChatService tgChatService) {
         this.tgChatService = tgChatService;
     }
 

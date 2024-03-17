@@ -7,6 +7,7 @@ import edu.java.dto.Link;
 import edu.java.dto.github.RepositoryResponse;
 import java.net.URI;
 import java.time.OffsetDateTime;
+import edu.java.updates.UpdatesInfo;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -65,12 +66,20 @@ public class GithubWebClientTest {
     }
 
     @Test
-    public void shouldGetUpdatedAt() {
+    public void shouldGetUpdatesInfo() {
         //arrange
         GithubClient client = new GithubWebClient(wireMockServer.baseUrl());
         //act
-        OffsetDateTime updatedAt = client.getUpdatedAt(LINK);
+        UpdatesInfo firstUpdatesInfo = client.getUpdatesInfo(LINK);
+        LINK.setUpdatedAt(DATE_TIME.minusDays(1));
+        UpdatesInfo secondUpdatesInfo = client.getUpdatesInfo(LINK);
         //assert
-        assertThat(updatedAt).isEqualTo(DATE_TIME);
+        assertThat(firstUpdatesInfo.updatedAt()).isEqualTo(DATE_TIME);
+        assertThat(firstUpdatesInfo.isSomethingUpdated()).isFalse();
+        assertThat(firstUpdatesInfo.message()).isEqualTo("There are no updates!");
+
+        assertThat(secondUpdatesInfo.updatedAt()).isEqualTo(DATE_TIME);
+        assertThat(secondUpdatesInfo.isSomethingUpdated()).isTrue();
+        assertThat(secondUpdatesInfo.message()).isEqualTo("The repository has been updated!");
     }
 }

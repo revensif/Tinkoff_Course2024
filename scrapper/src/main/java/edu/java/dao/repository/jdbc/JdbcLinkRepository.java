@@ -25,16 +25,16 @@ public class JdbcLinkRepository implements LinkRepository {
         jdbcTemplate.update(
             "INSERT INTO link (url, updated_at) VALUES (?, ?)",
             url.toString(),
-            OffsetDateTime.MIN.truncatedTo(ChronoUnit.MILLIS)
+            OffsetDateTime.now().truncatedTo(ChronoUnit.MILLIS)
         );
         return findByUri(url);
     }
 
     @Override
     public Link remove(URI url) {
-        Link link = findByUri(url);
+        Link removedLink = findByUri(url);
         jdbcTemplate.update("DELETE FROM link WHERE url = ?", url.toString());
-        return link;
+        return removedLink;
     }
 
     @Override

@@ -40,7 +40,7 @@ public class LinksControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockBean(name = "jdbcLinksService")
     private LinksService linksService;
 
     private ObjectMapper objectMapper;

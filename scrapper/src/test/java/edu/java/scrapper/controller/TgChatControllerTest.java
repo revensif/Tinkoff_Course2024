@@ -32,7 +32,7 @@ public class TgChatControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockBean(name = "jdbcTgChatService")
     private TgChatService tgChatService;
 
     @BeforeEach

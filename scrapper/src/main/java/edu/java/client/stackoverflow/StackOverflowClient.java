@@ -1,12 +1,15 @@
 package edu.java.client.stackoverflow;
 
 import edu.java.dto.Link;
+import edu.java.dto.stackoverflow.CommentsResponse;
 import edu.java.dto.stackoverflow.QuestionResponse;
-import java.time.OffsetDateTime;
+import edu.java.updates.UpdatesInfo;
 import reactor.core.publisher.Mono;
 
 public interface StackOverflowClient {
     Mono<QuestionResponse> fetchQuestion(Long id);
 
-    OffsetDateTime getUpdatedAt(Link link);
+    Mono<CommentsResponse> fetchComments(Long id);
+
+    UpdatesInfo getUpdatesInfo(Link link, Integer answerCount, Integer commentCount);
 }
