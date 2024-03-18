@@ -6,8 +6,7 @@ import edu.java.dto.response.LinkResponse;
 import edu.java.dto.response.ListLinksResponse;
 import edu.java.service.LinksService;
 import jakarta.validation.Valid;
-import java.util.ArrayList;
-import java.util.List;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,7 +21,7 @@ public class LinksController {
 
     private final LinksService linksService;
 
-    public LinksController(LinksService linksService) {
+    public LinksController(@Qualifier("jdbcLinksService") LinksService linksService) {
         this.linksService = linksService;
     }
 
@@ -30,20 +29,16 @@ public class LinksController {
 
     @GetMapping
     public ListLinksResponse getAllLinks(@RequestHeader(HEADER) Long id) {
-        linksService.getAllLinks();
-        List<LinkResponse> links = new ArrayList<>();
-        return new ListLinksResponse(links, links.size());
+        return linksService.listAll(id);
     }
 
     @PostMapping
     public LinkResponse addLink(@RequestHeader(HEADER) Long id, @RequestBody @Valid AddLinkRequest request) {
-        linksService.addLink();
-        return new LinkResponse(id, request.url());
+        return linksService.add(id, request);
     }
 
     @DeleteMapping
     public LinkResponse deleteLink(@RequestHeader(HEADER) Long id, @RequestBody @Valid RemoveLinkRequest request) {
-        linksService.deleteLink();
-        return new LinkResponse(id, request.url());
+        return linksService.remove(id, request);
     }
 }

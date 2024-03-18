@@ -1,15 +1,21 @@
 package edu.java.scheduler;
 
-import lombok.extern.log4j.Log4j2;
+import edu.java.service.LinkUpdater;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
-@Log4j2
 public class LinkUpdaterScheduler {
+
+    private final LinkUpdater linkUpdater;
+
+    public LinkUpdaterScheduler(@Qualifier("jdbcLinkUpdater") LinkUpdater linkUpdater) {
+        this.linkUpdater = linkUpdater;
+    }
 
     @Scheduled(fixedDelayString = "#{@scheduler.interval()}")
     public void update() {
-        log.info("Scheduler is running!");
+        linkUpdater.update();
     }
 }

@@ -1,15 +1,10 @@
 package edu.java.service;
 
-import org.springframework.stereotype.Service;
+import edu.java.dto.Chat;
 
-@Service
-public class TgChatService {
+public interface TgChatService {
 
-    public String registerChat() {
-        return "The chat has been registered";
-    }
+    Chat register(long tgChatId);
 
-    public String unregisterChat() {
-        return "The chat has been unregistered";
-    }
+    Chat unregister(long tgChatId);
 }
