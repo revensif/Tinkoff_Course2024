@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @ConditionalOnProperty(prefix = "app", name = "database-access-type", havingValue = "jdbc")
-public class JdbcConfiguration {
+public class JdbcConfig {
 
     @Bean
     public JdbcLinksService jdbcLinksService(

@@ -1,6 +1,6 @@
 package edu.java.scrapper.dao.repository.jdbc;
 
-import edu.java.dao.repository.LinkRepository;
+import edu.java.dao.repository.jdbc.JdbcLinkRepository;
 import edu.java.scrapper.IntegrationTest;
 import java.net.URI;
 import java.time.Duration;
@@ -15,14 +15,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(properties = "app.database-access-type=jdbc")
 @Transactional
-public class LinkRepositoryTest extends IntegrationTest {
+public class JdbcLinkRepositoryTest extends IntegrationTest {
 
     private static final URI FIRST_URL = URI.create("link1.com");
     private static final URI SECOND_URL = URI.create("link2.com");
     private static final OffsetDateTime CURRENT_TIME = OffsetDateTime.now().truncatedTo(ChronoUnit.MILLIS);
 
     @Autowired
-    private LinkRepository linkRepository;
+    private JdbcLinkRepository linkRepository;
 
     @Test
     public void shouldAddLinkToDatabase() {

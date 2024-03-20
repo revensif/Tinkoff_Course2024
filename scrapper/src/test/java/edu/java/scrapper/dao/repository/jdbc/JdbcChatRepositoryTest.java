@@ -1,6 +1,6 @@
 package edu.java.scrapper.dao.repository.jdbc;
 
-import edu.java.dao.repository.ChatRepository;
+import edu.java.dao.repository.jdbc.JdbcChatRepository;
 import edu.java.dto.Chat;
 import edu.java.scrapper.IntegrationTest;
 import java.util.List;
@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(properties = "app.database-access-type=jdbc")
 @Transactional
-public class ChatRepositoryTest extends IntegrationTest {
+public class JdbcChatRepositoryTest extends IntegrationTest {
 
     private static final long FIRST_ID = 1L;
     private static final long SECOND_ID = 2L;
@@ -20,7 +20,7 @@ public class ChatRepositoryTest extends IntegrationTest {
     private static final Chat SECOND_CHAT = new Chat(SECOND_ID);
 
     @Autowired
-    private ChatRepository chatRepository;
+    private JdbcChatRepository chatRepository;
 
     @Test
     public void shouldAddChatToDatabase() {

@@ -1,9 +1,5 @@
 package edu.java.scrapper.dao.repository.jdbc;
 
-import edu.java.configuration.ApplicationConfig;
-import edu.java.dao.repository.ChatLinkRepository;
-import edu.java.dao.repository.ChatRepository;
-import edu.java.dao.repository.LinkRepository;
 import edu.java.dao.repository.jdbc.JdbcChatLinkRepository;
 import edu.java.dao.repository.jdbc.JdbcChatRepository;
 import edu.java.dao.repository.jdbc.JdbcLinkRepository;
@@ -14,25 +10,14 @@ import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(properties = "app.database-access-type=jdbc")
 @Transactional
-public class ChatLinkRepositoryTest extends IntegrationTest {
+public class JdbcChatLinkRepositoryTest extends IntegrationTest {
 
     private static final long FIRST_ID = 1L;
     private static final long SECOND_ID = 2L;
@@ -41,13 +26,13 @@ public class ChatLinkRepositoryTest extends IntegrationTest {
     private static final OffsetDateTime CURRENT_TIME = OffsetDateTime.now().truncatedTo(ChronoUnit.MILLIS);
 
     @Autowired
-    private ChatRepository chatRepository;
+    private JdbcChatRepository chatRepository;
 
     @Autowired
-    private LinkRepository linkRepository;
+    private JdbcLinkRepository linkRepository;
 
     @Autowired
-    private ChatLinkRepository chatLinkRepository;
+    private JdbcChatLinkRepository chatLinkRepository;
 
     @Test
     public void shouldAddChatLinkToDatabase() {

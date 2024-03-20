@@ -1,11 +1,11 @@
-package edu.java.scrapper.service;
+package edu.java.scrapper.service.jdbc;
 
-import edu.java.dao.repository.ChatRepository;
+import edu.java.dao.repository.jdbc.JdbcChatRepository;
 import edu.java.dto.Chat;
 import edu.java.exception.ChatAlreadyRegisteredException;
 import edu.java.exception.ChatNotFoundException;
 import edu.java.scrapper.IntegrationTest;
-import edu.java.service.TgChatService;
+import edu.java.service.jdbc.JdbcTgChatService;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest(properties = "app.database-access-type=jdbc")
-public class TgChatServiceTest extends IntegrationTest {
+public class JdbcTgChatServiceTest extends IntegrationTest {
 
     private static final long FIRST_ID = 1L;
     private static final long SECOND_ID = 2L;
@@ -24,10 +24,10 @@ public class TgChatServiceTest extends IntegrationTest {
     private static final Chat SECOND_CHAT = new Chat(SECOND_ID);
 
     @Autowired
-    private TgChatService tgChatService;
+    private JdbcTgChatService tgChatService;
 
     @Autowired
-    private ChatRepository chatRepository;
+    private JdbcChatRepository chatRepository;
 
     @Test
     @Transactional

@@ -1,8 +1,8 @@
-package edu.java.scrapper.service;
+package edu.java.scrapper.service.jdbc;
 
-import edu.java.dao.repository.ChatLinkRepository;
-import edu.java.dao.repository.ChatRepository;
-import edu.java.dao.repository.LinkRepository;
+import edu.java.dao.repository.jdbc.JdbcChatLinkRepository;
+import edu.java.dao.repository.jdbc.JdbcChatRepository;
+import edu.java.dao.repository.jdbc.JdbcLinkRepository;
 import edu.java.dto.request.AddLinkRequest;
 import edu.java.dto.request.RemoveLinkRequest;
 import edu.java.dto.response.LinkResponse;
@@ -10,7 +10,7 @@ import edu.java.dto.response.ListLinksResponse;
 import edu.java.exception.LinkAlreadyTrackedException;
 import edu.java.exception.LinkNotFoundException;
 import edu.java.scrapper.IntegrationTest;
-import edu.java.service.LinksService;
+import edu.java.service.jdbc.JdbcLinksService;
 import java.net.URI;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest(properties = "app.database-access-type=jdbc")
-public class LinksServiceTest extends IntegrationTest {
+public class JdbcLinksServiceTest extends IntegrationTest {
 
     private static final long FIRST_ID = 1L;
     private static final long SECOND_ID = 2L;
@@ -30,16 +30,16 @@ public class LinksServiceTest extends IntegrationTest {
     private static final URI SECOND_URL = URI.create("link2.com");
 
     @Autowired
-    private LinksService linksService;
+    private JdbcLinksService linksService;
 
     @Autowired
-    private ChatLinkRepository chatLinkRepository;
+    private JdbcChatLinkRepository chatLinkRepository;
 
     @Autowired
-    private LinkRepository linkRepository;
+    private JdbcLinkRepository linkRepository;
 
     @Autowired
-    private ChatRepository chatRepository;
+    private JdbcChatRepository chatRepository;
 
     @Test
     @Transactional
