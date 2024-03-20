@@ -9,7 +9,6 @@ import edu.java.dto.response.LinkResponse;
 import edu.java.dto.response.ListLinksResponse;
 import edu.java.exception.LinkAlreadyTrackedException;
 import edu.java.exception.LinkNotFoundException;
-import edu.java.scrapper.IntegrationTest;
 import edu.java.service.LinksService;
 import java.net.URI;
 import java.util.List;

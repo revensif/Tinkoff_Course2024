@@ -1,5 +1,9 @@
 package edu.java.scrapper.dao.repository.jdbc;
 
+import edu.java.configuration.ApplicationConfig;
+import edu.java.dao.repository.ChatLinkRepository;
+import edu.java.dao.repository.ChatRepository;
+import edu.java.dao.repository.LinkRepository;
 import edu.java.dao.repository.jdbc.JdbcChatLinkRepository;
 import edu.java.dao.repository.jdbc.JdbcChatRepository;
 import edu.java.dao.repository.jdbc.JdbcLinkRepository;
@@ -10,15 +14,25 @@ import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-public class JdbcChatLinkRepositoryTest extends IntegrationTest {
+@SpringBootTest(properties = "app.database-access-type=jdbc")
+@Transactional
+public class ChatLinkRepositoryTest extends IntegrationTest {
 
     private static final long FIRST_ID = 1L;
     private static final long SECOND_ID = 2L;
@@ -27,34 +41,27 @@ public class JdbcChatLinkRepositoryTest extends IntegrationTest {
     private static final OffsetDateTime CURRENT_TIME = OffsetDateTime.now().truncatedTo(ChronoUnit.MILLIS);
 
     @Autowired
-    private JdbcChatRepository chatRepository;
+    private ChatRepository chatRepository;
 
     @Autowired
-    private JdbcLinkRepository linkRepository;
+    private LinkRepository linkRepository;
 
     @Autowired
-    private JdbcChatLinkRepository chatLinkRepository;
-
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private ChatLinkRepository chatLinkRepository;
 
     @Test
-    @Transactional
-    @Rollback
     public void shouldAddChatLinkToDatabase() {
         //arrange
         assertThat(chatLinkRepository.findAll().size()).isEqualTo(0);
         addChatsAndLinksToDatabaseAndGetLinkIds();
         //act + assert
-        chatLinkRepository.add(SECOND_ID, linkRepository.findByUri(FIRST_URL).getLinkId());
+        chatLinkRepository.add(SECOND_ID, linkRepository.findByUri(FIRST_URL).linkId());
         assertThat(chatLinkRepository.findAll().size()).isEqualTo(1);
-        chatLinkRepository.add(FIRST_ID, linkRepository.findByUri(SECOND_URL).getLinkId());
+        chatLinkRepository.add(FIRST_ID, linkRepository.findByUri(SECOND_URL).linkId());
         assertThat(chatLinkRepository.findAll().size()).isEqualTo(2);
     }
 
     @Test
-    @Transactional
-    @Rollback
     public void shouldRemoveChatLinkFromDatabase() {
         //arrange
         long[] linkIds = prepareDatabase();
@@ -67,8 +74,6 @@ public class JdbcChatLinkRepositoryTest extends IntegrationTest {
     }
 
     @Test
-    @Transactional
-    @Rollback
     public void shouldFindAllChatLinksFromDatabase() {
         //arrange
         long[] linkIds = prepareDatabase();
@@ -81,8 +86,6 @@ public class JdbcChatLinkRepositoryTest extends IntegrationTest {
     }
 
     @Test
-    @Transactional
-    @Rollback
     public void shouldFindChatLinkByIdsFromDatabase() {
         //arrange
         long[] linkIds = prepareDatabase();
@@ -99,8 +102,6 @@ public class JdbcChatLinkRepositoryTest extends IntegrationTest {
     }
 
     @Test
-    @Transactional
-    @Rollback
     public void shouldFindAllChatsThatTrackThisLink() {
         //arrange
         long[] linkIds = prepareDatabase();
@@ -111,8 +112,6 @@ public class JdbcChatLinkRepositoryTest extends IntegrationTest {
     }
 
     @Test
-    @Transactional
-    @Rollback
     public void shouldFindAllLinksTrackedByThisChat() {
         //assert
         long[] linkIds = prepareDatabase();
@@ -130,8 +129,8 @@ public class JdbcChatLinkRepositoryTest extends IntegrationTest {
         linkRepository.add(SECOND_URL);
         linkRepository.changeUpdatedAt(FIRST_URL, CURRENT_TIME);
         linkRepository.changeUpdatedAt(SECOND_URL, CURRENT_TIME);
-        return new long[] {linkRepository.findByUri(FIRST_URL).getLinkId(),
-            linkRepository.findByUri(SECOND_URL).getLinkId()};
+        return new long[] {linkRepository.findByUri(FIRST_URL).linkId(),
+            linkRepository.findByUri(SECOND_URL).linkId()};
 
     }
 

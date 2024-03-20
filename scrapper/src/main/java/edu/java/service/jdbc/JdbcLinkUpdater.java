@@ -11,6 +11,7 @@ import edu.java.service.LinkUpdater;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,26 +32,41 @@ public class JdbcLinkUpdater implements LinkUpdater {
     @Override
     @Transactional
     public int update() {
-        int updatesCount = 0;
+        AtomicInteger updatesCount = new AtomicInteger(0);
         List<Link> outdatedLinks = linkRepository.findOutdatedLinks(THRESHOLD);
         for (Link link : outdatedLinks) {
-            OffsetDateTime updatedAt = link.getUpdatedAt();
-            if (link.getUrl().getHost().matches(GITHUB)) {
-                updatedAt = githubClient.getUpdatedAt(link);
-            } else if (link.getUrl().getHost().matches(STACKOVERFLOW)) {
-                updatedAt = stackOverflowClient.getUpdatedAt(link);
+            String path = link.url().getPath();
+            String[] pathParts = path.split("/");
+            if (link.url().getHost().matches(GITHUB)) {
+                githubClient.fetchRepository(pathParts[1], pathParts[2])
+                    .subscribe(response -> {
+                        OffsetDateTime updatedAt = response.updatedAt();
+                        if (updatedAt.isAfter(link.updatedAt())) {
+                            sendUpdate(link, updatesCount);
+                        }
+                        linkRepository.changeUpdatedAt(link.url(), updatedAt);
+                    });
+            } else if (link.url().getHost().matches(STACKOVERFLOW)) {
+                stackOverflowClient.fetchQuestion(Long.parseLong(pathParts[pathParts.length - 2]))
+                    .subscribe(response -> {
+                        OffsetDateTime updatedAt = response.items().getFirst().lastActivityDate();
+                        if (updatedAt.isAfter(link.updatedAt())) {
+                            sendUpdate(link, updatesCount);
+                        }
+                        linkRepository.changeUpdatedAt(link.url(), updatedAt);
+                    });
             }
-            if (updatedAt.isAfter(link.getUpdatedAt())) {
-                httpBotClient.sendUpdate(new LinkUpdateRequest(
-                    link.getLinkId(),
-                    link.getUrl(),
-                    "The link has been updated",
-                    chatLinkRepository.findAllChatsThatTrackThisLink(link.getLinkId())
-                ));
-                updatesCount++;
-            }
-            linkRepository.changeUpdatedAt(link.getUrl(), updatedAt);
         }
-        return updatesCount;
+        return updatesCount.get();
+    }
+
+    private void sendUpdate(Link link, AtomicInteger updatesCount) {
+        httpBotClient.sendUpdate(new LinkUpdateRequest(
+            link.linkId(),
+            link.url(),
+            "The link has been updated",
+            chatLinkRepository.findAllChatsThatTrackThisLink(link.linkId())
+        ));
+        updatesCount.addAndGet(1);
     }
 }

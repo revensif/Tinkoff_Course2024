@@ -3,7 +3,6 @@ package edu.java.scrapper.client.stackoverflow;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import edu.java.client.stackoverflow.StackOverflowClient;
 import edu.java.client.stackoverflow.StackOverflowWebClient;
-import edu.java.dto.Link;
 import edu.java.dto.stackoverflow.QuestionResponse;
 import java.net.URI;
 import java.time.Instant;
@@ -24,7 +23,6 @@ public class StackOverflowWebClientTest {
     private static final Long QUESTION_ID = 12345L;
     private static final OffsetDateTime DATE_TIME =
         OffsetDateTime.ofInstant(Instant.ofEpochSecond(1708698398L), ZoneOffset.UTC);
-    private static final Link LINK = new Link(QUESTION_ID, LINK_URL, DATE_TIME);
     private static WireMockServer wireMockServer;
     private static final String RESPONSE_BODY = """
         {
@@ -71,22 +69,10 @@ public class StackOverflowWebClientTest {
     }
 
     @Test
-    public void shouldFetchRepository() {
+    public void shouldFetchQuestion() {
         //arrange
         StackOverflowClient client = new StackOverflowWebClient(wireMockServer.baseUrl());
-        //act
-        QuestionResponse response = client.fetchQuestion(QUESTION_ID).block();
-        //assert
-        assertThat(response).isEqualTo(EXPECTED_RESPONSE);
-    }
-
-    @Test
-    public void shouldGetUpdatedAt() {
-        //arrange
-        StackOverflowClient client = new StackOverflowWebClient(wireMockServer.baseUrl());
-        //act
-        OffsetDateTime updatedAt = client.getUpdatedAt(LINK);
-        //assert
-        assertThat(updatedAt).isEqualTo(DATE_TIME);
+        //act + assert
+        client.fetchQuestion(QUESTION_ID).subscribe(response -> assertThat(response).isEqualTo(EXPECTED_RESPONSE));
     }
 }

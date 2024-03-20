@@ -1,23 +1,22 @@
-package edu.java.scrapper.service.jdbc;
+package edu.java.scrapper.service;
 
-import edu.java.dao.repository.jdbc.JdbcChatRepository;
+import edu.java.dao.repository.ChatRepository;
 import edu.java.dto.Chat;
 import edu.java.exception.ChatAlreadyRegisteredException;
 import edu.java.exception.ChatNotFoundException;
 import edu.java.scrapper.IntegrationTest;
-import edu.java.service.jdbc.JdbcTgChatService;
+import edu.java.service.TgChatService;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@SpringBootTest
-public class JdbcTgChatServiceTest extends IntegrationTest {
+@SpringBootTest(properties = "app.database-access-type=jdbc")
+public class TgChatServiceTest extends IntegrationTest {
 
     private static final long FIRST_ID = 1L;
     private static final long SECOND_ID = 2L;
@@ -25,16 +24,10 @@ public class JdbcTgChatServiceTest extends IntegrationTest {
     private static final Chat SECOND_CHAT = new Chat(SECOND_ID);
 
     @Autowired
-    private JdbcTgChatService tgChatService;
+    private TgChatService tgChatService;
 
     @Autowired
-    private JdbcChatRepository chatRepository;
-
-    @Autowired
-    private JdbcTemplate firstJdbcTemplate;
-
-    @Autowired
-    private JdbcTemplate secondJdbcTemplate;
+    private ChatRepository chatRepository;
 
     @Test
     @Transactional

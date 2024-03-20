@@ -1,8 +1,6 @@
 package edu.java.client.stackoverflow;
 
-import edu.java.dto.Link;
 import edu.java.dto.stackoverflow.QuestionResponse;
-import java.time.OffsetDateTime;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -28,13 +26,5 @@ public class StackOverflowWebClient implements StackOverflowClient {
             .uri(QUESTION_ENDPOINT, id)
             .retrieve()
             .bodyToMono(QuestionResponse.class);
-    }
-
-    @Override
-    public OffsetDateTime getUpdatedAt(Link link) {
-        String path = link.getUrl().getPath();
-        String[] pathParts = path.split("/");
-        QuestionResponse response = fetchQuestion(Long.parseLong(pathParts[pathParts.length - 2])).block();
-        return response.items().getFirst().lastActivityDate();
     }
 }

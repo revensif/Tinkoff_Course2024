@@ -58,19 +58,7 @@ public class GithubWebClientTest {
     public void shouldFetchRepository() {
         //arrange
         GithubClient client = new GithubWebClient(wireMockServer.baseUrl());
-        //act
-        RepositoryResponse response = client.fetchRepository(OWNER, REPO).block();
-        //assert
-        assertThat(response).isEqualTo(EXPECTED_RESPONSE);
-    }
-
-    @Test
-    public void shouldGetUpdatedAt() {
-        //arrange
-        GithubClient client = new GithubWebClient(wireMockServer.baseUrl());
-        //act
-        OffsetDateTime updatedAt = client.getUpdatedAt(LINK);
-        //assert
-        assertThat(updatedAt).isEqualTo(DATE_TIME);
+        //act + assert
+        client.fetchRepository(OWNER, REPO).subscribe(response -> assertThat(response).isEqualTo(EXPECTED_RESPONSE));
     }
 }

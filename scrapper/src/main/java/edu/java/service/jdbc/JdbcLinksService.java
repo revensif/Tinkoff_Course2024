@@ -26,35 +26,35 @@ public class JdbcLinksService implements LinksService {
     @Transactional
     public LinkResponse add(long tgChatId, AddLinkRequest request) {
         Link link = linkRepository.findByUri(request.url());
-        if ((link != null) && (chatLinkRepository.findByChatAndLinkIds(tgChatId, link.getLinkId()) != null)) {
+        if ((link != null) && (chatLinkRepository.findByChatAndLinkIds(tgChatId, link.linkId()) != null)) {
             throw new LinkAlreadyTrackedException();
         }
         if (link == null) {
             link = linkRepository.add(request.url());
         }
-        chatLinkRepository.add(tgChatId, link.getLinkId());
-        return new LinkResponse(link.getLinkId(), link.getUrl());
+        chatLinkRepository.add(tgChatId, link.linkId());
+        return new LinkResponse(link.linkId(), link.url());
     }
 
     @Override
     @Transactional
     public LinkResponse remove(long tgChatId, RemoveLinkRequest request) {
         Link link = linkRepository.findByUri(request.url());
-        if ((link == null) || (chatLinkRepository.findByChatAndLinkIds(tgChatId, link.getLinkId()) == null)) {
+        if ((link == null) || (chatLinkRepository.findByChatAndLinkIds(tgChatId, link.linkId()) == null)) {
             throw new LinkNotFoundException();
         }
-        chatLinkRepository.remove(tgChatId, link.getLinkId());
-        if (chatLinkRepository.findAllChatsThatTrackThisLink(link.getLinkId()).isEmpty()) {
+        chatLinkRepository.remove(tgChatId, link.linkId());
+        if (chatLinkRepository.findAllChatsThatTrackThisLink(link.linkId()).isEmpty()) {
             linkRepository.remove(request.url());
         }
-        return new LinkResponse(link.getLinkId(), link.getUrl());
+        return new LinkResponse(link.linkId(), link.url());
     }
 
     @Override
     @Transactional
     public ListLinksResponse listAll(long tgChatId) {
         List<LinkResponse> links = chatLinkRepository.findAllLinksTrackedByThisChat(tgChatId).stream()
-            .map((link) -> new LinkResponse(link.getLinkId(), link.getUrl()))
+            .map((link) -> new LinkResponse(link.linkId(), link.url()))
             .toList();
         return new ListLinksResponse(links, links.size());
     }
