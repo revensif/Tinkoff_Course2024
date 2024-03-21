@@ -6,6 +6,9 @@ import edu.java.client.stackoverflow.StackOverflowClient;
 import edu.java.dao.repository.jdbc.JdbcChatLinkRepository;
 import edu.java.dao.repository.jdbc.JdbcChatRepository;
 import edu.java.dao.repository.jdbc.JdbcLinkRepository;
+import edu.java.service.LinkUpdater;
+import edu.java.service.LinksService;
+import edu.java.service.TgChatService;
 import edu.java.service.jdbc.JdbcLinkUpdater;
 import edu.java.service.jdbc.JdbcLinksService;
 import edu.java.service.jdbc.JdbcTgChatService;
@@ -18,7 +21,7 @@ import org.springframework.context.annotation.Configuration;
 public class JdbcConfig {
 
     @Bean
-    public JdbcLinksService jdbcLinksService(
+    public LinksService jdbcLinksService(
         JdbcLinkRepository linkRepository,
         JdbcChatLinkRepository chatLinkRepository
     ) {
@@ -26,12 +29,12 @@ public class JdbcConfig {
     }
 
     @Bean
-    public JdbcTgChatService jdbcTgChatService(JdbcChatRepository chatRepository) {
+    public TgChatService jdbcTgChatService(JdbcChatRepository chatRepository) {
         return new JdbcTgChatService(chatRepository);
     }
 
     @Bean
-    public JdbcLinkUpdater jdbcLinkUpdater(
+    public LinkUpdater jdbcLinkUpdater(
         JdbcLinkRepository linkRepository,
         JdbcChatLinkRepository chatLinkRepository,
         GithubClient githubClient,

@@ -6,17 +6,17 @@ import edu.java.client.stackoverflow.StackOverflowClient;
 import edu.java.dao.repository.jdbc.JdbcChatLinkRepository;
 import edu.java.dao.repository.jdbc.JdbcLinkRepository;
 import edu.java.dto.Link;
+import edu.java.dto.github.RepositoryResponse;
 import edu.java.dto.request.LinkUpdateRequest;
+import edu.java.dto.stackoverflow.QuestionResponse;
 import edu.java.service.LinkUpdater;
 import java.time.Duration;
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service
 @RequiredArgsConstructor
 public class JdbcLinkUpdater implements LinkUpdater {
 
@@ -39,22 +39,19 @@ public class JdbcLinkUpdater implements LinkUpdater {
             String[] pathParts = path.split("/");
             if (link.url().getHost().matches(GITHUB)) {
                 githubClient.fetchRepository(pathParts[1], pathParts[2])
-                    .subscribe(response -> {
-                        OffsetDateTime updatedAt = response.updatedAt();
-                        if (updatedAt.isAfter(link.updatedAt())) {
-                            sendUpdate(link, updatesCount);
-                        }
-                        linkRepository.changeUpdatedAt(link.url(), updatedAt);
-                    });
+                    .map(RepositoryResponse::updatedAt)
+                    .filter(response -> response.isAfter(link.updatedAt()))
+                    .doOnNext(response -> sendUpdate(link, updatesCount))
+                    .doOnNext(response -> linkRepository.changeUpdatedAt(link.url(), response))
+                    .subscribe();
             } else if (link.url().getHost().matches(STACKOVERFLOW)) {
                 stackOverflowClient.fetchQuestion(Long.parseLong(pathParts[pathParts.length - 2]))
-                    .subscribe(response -> {
-                        OffsetDateTime updatedAt = response.items().getFirst().lastActivityDate();
-                        if (updatedAt.isAfter(link.updatedAt())) {
-                            sendUpdate(link, updatesCount);
-                        }
-                        linkRepository.changeUpdatedAt(link.url(), updatedAt);
-                    });
+                    .map(QuestionResponse::items)
+                    .map(itemResponses -> itemResponses.getFirst().lastActivityDate())
+                    .filter(response -> response.isAfter(link.updatedAt()))
+                    .doOnNext(response -> sendUpdate(link, updatesCount))
+                    .doOnNext(response -> linkRepository.changeUpdatedAt(link.url(), response))
+                    .subscribe();
             }
         }
         return updatesCount.get();

@@ -7,6 +7,7 @@ import edu.java.dto.Link;
 import edu.java.dto.github.RepositoryResponse;
 import java.net.URI;
 import java.time.OffsetDateTime;
+import edu.java.dto.response.LinkResponse;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -20,7 +21,6 @@ public class GithubWebClientTest {
     private static final String URL = "/repos/revensif/Tinkoff_Course2024";
     private static final OffsetDateTime DATE_TIME = OffsetDateTime.parse("2024-02-23T16:23:19Z");
     private static final Long REPOSITORY_ID = 182783L;
-    private static final Link LINK = new Link(REPOSITORY_ID, LINK_URL, DATE_TIME);
     private static final String OWNER = "revensif";
     private static final String REPO = "Tinkoff_Course2024";
     private static WireMockServer wireMockServer;
@@ -58,7 +58,9 @@ public class GithubWebClientTest {
     public void shouldFetchRepository() {
         //arrange
         GithubClient client = new GithubWebClient(wireMockServer.baseUrl());
-        //act + assert
-        client.fetchRepository(OWNER, REPO).subscribe(response -> assertThat(response).isEqualTo(EXPECTED_RESPONSE));
+        //act
+        RepositoryResponse actual = client.fetchRepository(OWNER, REPO).block();
+        //assert
+        assertThat(actual).isEqualTo(EXPECTED_RESPONSE);
     }
 }
