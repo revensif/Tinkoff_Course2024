@@ -11,5 +11,6 @@
         <sqlFile path="sql/chat.sql" relativeToChangelogFile="true"/>
         <sqlFile path="sql/link.sql" relativeToChangelogFile="true"/>
         <sqlFile path="sql/chat_link.sql" relativeToChangelogFile="true"/>
+        <sqlFile path="sql/question.sql" relativeToChangelogFile="true"/>
     </changeSet>
 </databaseChangeLog>

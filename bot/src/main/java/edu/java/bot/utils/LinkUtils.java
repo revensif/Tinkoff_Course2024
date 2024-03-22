@@ -3,9 +3,9 @@ package edu.java.bot.utils;
 import java.net.URI;
 import java.util.List;
 
-public class LinkUtils {
+public final class LinkUtils {
 
-    private static final List<String> AVAILABLE_LINKS = List.of(
+    public static final List<String> AVAILABLE_LINKS = List.of(
         "stackoverflow\\.com",
         "github\\.com"
     );
