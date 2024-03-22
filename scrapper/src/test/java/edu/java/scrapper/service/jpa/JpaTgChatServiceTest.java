@@ -4,6 +4,7 @@ import edu.java.dao.repository.jpa.JpaChatRepository;
 import edu.java.dto.Chat;
 import edu.java.exception.ChatAlreadyRegisteredException;
 import edu.java.exception.ChatNotFoundException;
+import edu.java.scrapper.IntegrationTest;
 import edu.java.service.TgChatService;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -16,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest(properties = "app.database-access-type=jpa")
 @Transactional
-public class JpaTgChatServiceTest {
+public class JpaTgChatServiceTest extends IntegrationTest {
 
     private static final long FIRST_ID = 1L;
     private static final long SECOND_ID = 2L;
