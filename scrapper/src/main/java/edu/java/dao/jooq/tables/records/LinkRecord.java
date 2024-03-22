@@ -48,7 +48,7 @@ public class LinkRecord extends UpdatableRecordImpl<LinkRecord> implements Recor
      * Getter for <code>LINK.LINK_ID</code>.
      */
     @Nullable
-    public Long getLinkId() {
+    public Long linkId() {
         return (Long) get(0);
     }
 
@@ -65,7 +65,7 @@ public class LinkRecord extends UpdatableRecordImpl<LinkRecord> implements Recor
     @jakarta.validation.constraints.NotNull
     @Size(max = 1000000000)
     @NotNull
-    public String getUrl() {
+    public String url() {
         return (String) get(1);
     }
 
@@ -80,7 +80,7 @@ public class LinkRecord extends UpdatableRecordImpl<LinkRecord> implements Recor
      * Getter for <code>LINK.UPDATED_AT</code>.
      */
     @Nullable
-    public OffsetDateTime getUpdatedAt() {
+    public OffsetDateTime updatedAt() {
         return (OffsetDateTime) get(2);
     }
 
@@ -131,37 +131,37 @@ public class LinkRecord extends UpdatableRecordImpl<LinkRecord> implements Recor
     @Override
     @Nullable
     public Long component1() {
-        return getLinkId();
+        return linkId();
     }
 
     @Override
     @NotNull
     public String component2() {
-        return getUrl();
+        return url();
     }
 
     @Override
     @Nullable
     public OffsetDateTime component3() {
-        return getUpdatedAt();
+        return updatedAt();
     }
 
     @Override
     @Nullable
     public Long value1() {
-        return getLinkId();
+        return linkId();
     }
 
     @Override
     @NotNull
     public String value2() {
-        return getUrl();
+        return url();
     }
 
     @Override
     @Nullable
     public OffsetDateTime value3() {
-        return getUpdatedAt();
+        return updatedAt();
     }
 
     @Override
@@ -225,9 +225,9 @@ public class LinkRecord extends UpdatableRecordImpl<LinkRecord> implements Recor
         super(Link.LINK);
 
         if (value != null) {
-            setLinkId(value.getLinkId());
-            setUrl(value.getUrl());
-            setUpdatedAt(value.getUpdatedAt());
+            setLinkId(value.linkId());
+            setUrl(value.url());
+            setUpdatedAt(value.updatedAt());
             resetChangedOnNotNull();
         }
     }

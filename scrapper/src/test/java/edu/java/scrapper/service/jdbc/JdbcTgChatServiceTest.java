@@ -5,18 +5,17 @@ import edu.java.dto.Chat;
 import edu.java.exception.ChatAlreadyRegisteredException;
 import edu.java.exception.ChatNotFoundException;
 import edu.java.scrapper.IntegrationTest;
-import edu.java.service.jdbc.JdbcTgChatService;
+import edu.java.service.TgChatService;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@SpringBootTest
+@SpringBootTest(properties = "app.database-access-type=jdbc")
+@Transactional
 public class JdbcTgChatServiceTest extends IntegrationTest {
 
     private static final long FIRST_ID = 1L;
@@ -25,17 +24,12 @@ public class JdbcTgChatServiceTest extends IntegrationTest {
     private static final Chat SECOND_CHAT = new Chat(SECOND_ID);
 
     @Autowired
-    private JdbcTgChatService tgChatService;
+    private TgChatService tgChatService;
 
     @Autowired
     private JdbcChatRepository chatRepository;
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
-
     @Test
-    @Transactional
-    @Rollback
     public void shouldRegisterChatToDatabase() {
         //act + assert
         assertThat(tgChatService.register(FIRST_ID)).isEqualTo(FIRST_CHAT);
@@ -47,8 +41,6 @@ public class JdbcTgChatServiceTest extends IntegrationTest {
     }
 
     @Test
-    @Transactional
-    @Rollback
     public void shouldUnregisterChatFromDatabase() {
         //act + assert
         tgChatService.register(FIRST_ID);

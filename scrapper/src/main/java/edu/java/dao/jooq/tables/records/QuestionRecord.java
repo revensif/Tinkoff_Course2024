@@ -46,7 +46,7 @@ public class QuestionRecord extends UpdatableRecordImpl<QuestionRecord> implemen
      */
     @jakarta.validation.constraints.NotNull
     @NotNull
-    public Long getLinkId() {
+    public Long linkId() {
         return (Long) get(0);
     }
 
@@ -61,7 +61,7 @@ public class QuestionRecord extends UpdatableRecordImpl<QuestionRecord> implemen
      * Getter for <code>QUESTION.ANSWER_COUNT</code>.
      */
     @Nullable
-    public Integer getAnswerCount() {
+    public Integer answerCount() {
         return (Integer) get(1);
     }
 
@@ -76,7 +76,7 @@ public class QuestionRecord extends UpdatableRecordImpl<QuestionRecord> implemen
      * Getter for <code>QUESTION.COMMENT_COUNT</code>.
      */
     @Nullable
-    public Integer getCommentCount() {
+    public Integer commentCount() {
         return (Integer) get(2);
     }
 
@@ -127,37 +127,37 @@ public class QuestionRecord extends UpdatableRecordImpl<QuestionRecord> implemen
     @Override
     @NotNull
     public Long component1() {
-        return getLinkId();
+        return linkId();
     }
 
     @Override
     @Nullable
     public Integer component2() {
-        return getAnswerCount();
+        return answerCount();
     }
 
     @Override
     @Nullable
     public Integer component3() {
-        return getCommentCount();
+        return commentCount();
     }
 
     @Override
     @NotNull
     public Long value1() {
-        return getLinkId();
+        return linkId();
     }
 
     @Override
     @Nullable
     public Integer value2() {
-        return getAnswerCount();
+        return answerCount();
     }
 
     @Override
     @Nullable
     public Integer value3() {
-        return getCommentCount();
+        return commentCount();
     }
 
     @Override
@@ -221,9 +221,9 @@ public class QuestionRecord extends UpdatableRecordImpl<QuestionRecord> implemen
         super(Question.QUESTION);
 
         if (value != null) {
-            setLinkId(value.getLinkId());
-            setAnswerCount(value.getAnswerCount());
-            setCommentCount(value.getCommentCount());
+            setLinkId(value.linkId());
+            setAnswerCount(value.answerCount());
+            setCommentCount(value.commentCount());
             resetChangedOnNotNull();
         }
     }

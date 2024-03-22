@@ -56,7 +56,7 @@ public class Question implements Serializable {
      */
     @jakarta.validation.constraints.NotNull
     @NotNull
-    public Long getLinkId() {
+    public Long linkId() {
         return this.linkId;
     }
 
@@ -71,7 +71,7 @@ public class Question implements Serializable {
      * Getter for <code>QUESTION.ANSWER_COUNT</code>.
      */
     @Nullable
-    public Integer getAnswerCount() {
+    public Integer answerCount() {
         return this.answerCount;
     }
 
@@ -86,7 +86,7 @@ public class Question implements Serializable {
      * Getter for <code>QUESTION.COMMENT_COUNT</code>.
      */
     @Nullable
-    public Integer getCommentCount() {
+    public Integer commentCount() {
         return this.commentCount;
     }
 

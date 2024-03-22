@@ -9,15 +9,14 @@ import java.net.URI;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import org.jooq.DSLContext;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
+@SpringBootTest(properties = "app.database-access-type=jooq")
+@Transactional
 public class JooqChatLinkRepositoryTest extends IntegrationTest {
 
     private static final long FIRST_ID = 1L;
@@ -35,26 +34,19 @@ public class JooqChatLinkRepositoryTest extends IntegrationTest {
     @Autowired
     private JooqChatLinkRepository chatLinkRepository;
 
-    @Autowired
-    private DSLContext dslContext;
-
     @Test
-    @Transactional
-    @Rollback
     public void shouldAddChatLinkToDatabase() {
         //arrange
         assertThat(chatLinkRepository.findAll().size()).isEqualTo(0);
         addChatsAndLinksToDatabaseAndGetLinkIds();
         //act + assert
-        chatLinkRepository.add(SECOND_ID, linkRepository.findByUri(FIRST_URL).getLinkId());
+        chatLinkRepository.add(SECOND_ID, linkRepository.findByUri(FIRST_URL).linkId());
         assertThat(chatLinkRepository.findAll().size()).isEqualTo(1);
-        chatLinkRepository.add(FIRST_ID, linkRepository.findByUri(SECOND_URL).getLinkId());
+        chatLinkRepository.add(FIRST_ID, linkRepository.findByUri(SECOND_URL).linkId());
         assertThat(chatLinkRepository.findAll().size()).isEqualTo(2);
     }
 
     @Test
-    @Transactional
-    @Rollback
     public void shouldRemoveChatLinkFromDatabase() {
         //arrange
         long[] linkIds = prepareDatabase();
@@ -67,8 +59,6 @@ public class JooqChatLinkRepositoryTest extends IntegrationTest {
     }
 
     @Test
-    @Transactional
-    @Rollback
     public void shouldFindAllChatLinksFromDatabase() {
         //arrange
         long[] linkIds = prepareDatabase();
@@ -81,8 +71,6 @@ public class JooqChatLinkRepositoryTest extends IntegrationTest {
     }
 
     @Test
-    @Transactional
-    @Rollback
     public void shouldFindChatLinkByIdsFromDatabase() {
         //arrange
         long[] linkIds = prepareDatabase();
@@ -99,8 +87,6 @@ public class JooqChatLinkRepositoryTest extends IntegrationTest {
     }
 
     @Test
-    @Transactional
-    @Rollback
     public void shouldFindAllChatsThatTrackThisLink() {
         //arrange
         long[] linkIds = prepareDatabase();
@@ -111,8 +97,6 @@ public class JooqChatLinkRepositoryTest extends IntegrationTest {
     }
 
     @Test
-    @Transactional
-    @Rollback
     public void shouldFindAllLinksTrackedByThisChat() {
         //assert
         long[] linkIds = prepareDatabase();
@@ -130,8 +114,8 @@ public class JooqChatLinkRepositoryTest extends IntegrationTest {
         linkRepository.add(SECOND_URL);
         linkRepository.changeUpdatedAt(FIRST_URL, CURRENT_TIME);
         linkRepository.changeUpdatedAt(SECOND_URL, CURRENT_TIME);
-        return new long[] {linkRepository.findByUri(FIRST_URL).getLinkId(),
-            linkRepository.findByUri(SECOND_URL).getLinkId()};
+        return new long[] {linkRepository.findByUri(FIRST_URL).linkId(),
+            linkRepository.findByUri(SECOND_URL).linkId()};
 
     }
 

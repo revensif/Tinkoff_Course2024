@@ -1,4 +1,8 @@
 app:
+  resources:
+    - github.com
+    - stackoverflow.com
+  database-access-type: jdbc
   scheduler:
     enable: true
     interval: 10s

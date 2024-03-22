@@ -13,13 +13,11 @@ import edu.java.service.LinkUpdater;
 import edu.java.updates.UpdatesInfo;
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import static edu.java.utils.LinkUtils.GITHUB;
-import static edu.java.utils.LinkUtils.STACKOVERFLOW;
+import reactor.core.publisher.Mono;
 
-@Service
 @RequiredArgsConstructor
 public class JdbcLinkUpdater implements LinkUpdater {
 
@@ -30,32 +28,84 @@ public class JdbcLinkUpdater implements LinkUpdater {
     private final StackOverflowClient stackOverflowClient;
     private final HttpBotClient httpBotClient;
     private static final Duration THRESHOLD = Duration.ofDays(10);
+    private final List<String> resources;
 
     @Override
     @Transactional
     public int update() {
-        int updatesCount = 0;
+        AtomicInteger updatesCount = new AtomicInteger(0);
         List<Link> outdatedLinks = linkRepository.findOutdatedLinks(THRESHOLD);
         for (Link link : outdatedLinks) {
-            UpdatesInfo updatesInfo = new UpdatesInfo(false, link.getUpdatedAt(), "There are no updates!");
-            if (link.getUrl().getHost().matches(GITHUB)) {
-                updatesInfo = githubClient.getUpdatesInfo(link);
-            } else if (link.getUrl().getHost().matches(STACKOVERFLOW)) {
-                Question question = questionRepository.findByLinkId(link.getLinkId());
-                updatesInfo =
-                    stackOverflowClient.getUpdatesInfo(link, question.getAnswerCount(), question.getCommentCount());
+            long linkId = link.linkId();
+            String path = link.url().getPath();
+            String[] pathParts = path.split("/");
+            UpdatesInfo updatesInfo = new UpdatesInfo(false, link.updatedAt(), "There are no updates!");
+            if (link.url().getHost().matches(resources.getFirst())) {
+                fetchGithubRepository(pathParts, updatesInfo);
+            } else if (link.url().getHost().matches(resources.getLast())) {
+                fetchStackoverflowQuestionAndComment(pathParts, updatesInfo, linkId);
             }
-            if (updatesInfo.updatedAt().isAfter(link.getUpdatedAt())) {
+            if (updatesInfo.getUpdatedAt().isAfter(link.updatedAt())) {
                 httpBotClient.sendUpdate(new LinkUpdateRequest(
-                    link.getLinkId(),
-                    link.getUrl(),
-                    updatesInfo.message(),
-                    chatLinkRepository.findAllChatsThatTrackThisLink(link.getLinkId())
+                    linkId,
+                    link.url(),
+                    updatesInfo.getMessage(),
+                    chatLinkRepository.findAllChatsThatTrackThisLink(link.linkId())
                 ));
-                updatesCount++;
+                updatesCount.addAndGet(1);
+                linkRepository.changeUpdatedAt(link.url(), updatesInfo.getUpdatedAt());
             }
-            linkRepository.changeUpdatedAt(link.getUrl(), updatesInfo.updatedAt());
         }
-        return updatesCount;
+        return updatesCount.get();
+    }
+
+    private void fetchGithubRepository(String[] pathParts, UpdatesInfo updatesInfo) {
+        githubClient.fetchRepository(pathParts[1], pathParts[2])
+            .doOnNext(response -> updatesInfo.setSomethingUpdated(response.updatedAt()
+                .isAfter(updatesInfo.getUpdatedAt())))
+            .filter(response -> updatesInfo.isSomethingUpdated())
+            .doOnNext(response -> {
+                updatesInfo.setUpdatedAt(response.updatedAt());
+                updatesInfo.setMessage("The repository has been updated!");
+            })
+            .subscribe();
+    }
+
+    private void fetchStackoverflowQuestionAndComment(String[] pathParts, UpdatesInfo updatesInfo, long linkId) {
+        long questionId = Long.parseLong(pathParts[pathParts.length - 2]);
+        Mono.zip(stackOverflowClient.fetchQuestion(questionId), stackOverflowClient.fetchComments(questionId))
+            .doOnNext(response -> updatesInfo.setSomethingUpdated(response.getT1().items().getFirst()
+                .lastActivityDate().isAfter(updatesInfo.getUpdatedAt())))
+            .filter(response -> updatesInfo.isSomethingUpdated())
+            .doOnNext(response -> updatesInfo.setUpdatedAt(response.getT1().items().getFirst()
+                .lastActivityDate()))
+            .map(response -> new Question(
+                linkId,
+                response.getT1().items().getFirst().answerCount(),
+                response.getT2().items().size()
+            ))
+            .doOnNext(question -> changeUpdatesInfoForStackOverflow(linkId, question, updatesInfo))
+            .subscribe();
+    }
+
+    private void changeUpdatesInfoForStackOverflow(long linkId, Question requestedQuestion, UpdatesInfo updatesInfo) {
+        Question questionInDatabase = questionRepository.findByLinkId(linkId);
+        int requestedAnswerCount = requestedQuestion.answerCount();
+        int requestedCommentCount = requestedQuestion.commentCount();
+        int databaseAnswerCount = questionInDatabase.answerCount();
+        int databaseCommentCount = questionInDatabase.commentCount();
+        if ((requestedAnswerCount > databaseAnswerCount) && (requestedCommentCount > databaseCommentCount)) {
+            questionRepository.changeAnswerCount(linkId, requestedAnswerCount);
+            questionRepository.changeCommentCount(linkId, requestedCommentCount);
+            updatesInfo.setMessage("There is a new answer and comment!");
+        } else if (requestedAnswerCount > databaseAnswerCount) {
+            questionRepository.changeAnswerCount(linkId, requestedAnswerCount);
+            updatesInfo.setMessage("There is a new answer!");
+        } else if (requestedCommentCount > databaseCommentCount) {
+            questionRepository.changeCommentCount(linkId, requestedCommentCount);
+            updatesInfo.setMessage("There is a new comment!");
+        } else {
+            updatesInfo.setMessage("The question has been updated!");
+        }
     }
 }

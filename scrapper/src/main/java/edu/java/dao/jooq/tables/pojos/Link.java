@@ -58,7 +58,7 @@ public class Link implements Serializable {
      * Getter for <code>LINK.LINK_ID</code>.
      */
     @Nullable
-    public Long getLinkId() {
+    public Long linkId() {
         return this.linkId;
     }
 
@@ -75,7 +75,7 @@ public class Link implements Serializable {
     @jakarta.validation.constraints.NotNull
     @Size(max = 1000000000)
     @NotNull
-    public String getUrl() {
+    public String url() {
         return this.url;
     }
 
@@ -90,7 +90,7 @@ public class Link implements Serializable {
      * Getter for <code>LINK.UPDATED_AT</code>.
      */
     @Nullable
-    public OffsetDateTime getUpdatedAt() {
+    public OffsetDateTime updatedAt() {
         return this.updatedAt;
     }
 

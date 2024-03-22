@@ -7,12 +7,11 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
+@SpringBootTest(properties = "app.database-access-type=jdbc")
+@Transactional
 public class JdbcChatRepositoryTest extends IntegrationTest {
 
     private static final long FIRST_ID = 1L;
@@ -23,12 +22,7 @@ public class JdbcChatRepositoryTest extends IntegrationTest {
     @Autowired
     private JdbcChatRepository chatRepository;
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
-
     @Test
-    @Transactional
-    @Rollback
     public void shouldAddChatToDatabase() {
         assertThat(chatRepository.findAll().size()).isEqualTo(0);
         chatRepository.add(FIRST_ID);
@@ -40,8 +34,6 @@ public class JdbcChatRepositoryTest extends IntegrationTest {
     }
 
     @Test
-    @Transactional
-    @Rollback
     public void shouldRemoveChatFromDatabase() {
         chatRepository.add(FIRST_ID);
         chatRepository.add(SECOND_ID);
@@ -53,8 +45,6 @@ public class JdbcChatRepositoryTest extends IntegrationTest {
     }
 
     @Test
-    @Transactional
-    @Rollback
     public void shouldFindAllChatsFromDatabase() {
         chatRepository.add(FIRST_ID);
         chatRepository.add(SECOND_ID);
@@ -63,8 +53,6 @@ public class JdbcChatRepositoryTest extends IntegrationTest {
     }
 
     @Test
-    @Transactional
-    @Rollback
     public void shouldFindChatByIdFromDatabase() {
         chatRepository.add(FIRST_ID);
         chatRepository.add(SECOND_ID);

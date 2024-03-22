@@ -32,4 +32,29 @@ public class JdbcQuestionRepository implements QuestionRepository {
             return null;
         }
     }
+
+    @Override
+    public Question removeQuestion(long linkId) {
+        Question removedQuestion = findByLinkId(linkId);
+        jdbcTemplate.update("DELETE FROM question WHERE link_id = ?", linkId);
+        return removedQuestion;
+    }
+
+    @Override
+    public void changeAnswerCount(long linkId, int answerCount) {
+        Question question = findByLinkId(linkId);
+        if (question == null) {
+            return;
+        }
+        jdbcTemplate.update("UPDATE question SET answer_count = ? WHERE link_id = ?", answerCount, linkId);
+    }
+
+    @Override
+    public void changeCommentCount(long linkId, int commentCount) {
+        Question question = findByLinkId(linkId);
+        if (question == null) {
+            return;
+        }
+        jdbcTemplate.update("UPDATE question SET comment_count = ? WHERE link_id = ?", commentCount, linkId);
+    }
 }

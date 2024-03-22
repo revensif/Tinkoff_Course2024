@@ -1,7 +1,10 @@
 package edu.java.configuration;
 
+import edu.java.utils.DatabaseAccessType;
 import jakarta.validation.constraints.NotNull;
 import java.time.Duration;
+import java.util.List;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.context.annotation.Bean;
@@ -15,7 +18,15 @@ public record ApplicationConfig(
     @NotNull
     @Bean
     @NestedConfigurationProperty
-    Scheduler scheduler
+    Scheduler scheduler,
+
+    @NotNull
+    @Value("${app.database-access-type}")
+    DatabaseAccessType databaseAccessType,
+
+    @NotNull
+    @Bean
+    List<String> resources
 ) {
     public record Scheduler(boolean enable, @NotNull Duration interval, @NotNull Duration forceCheckDelay) {
     }

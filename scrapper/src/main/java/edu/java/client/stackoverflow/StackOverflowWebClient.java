@@ -1,9 +1,7 @@
 package edu.java.client.stackoverflow;
 
-import edu.java.dto.Link;
 import edu.java.dto.stackoverflow.CommentsResponse;
 import edu.java.dto.stackoverflow.QuestionResponse;
-import edu.java.updates.UpdatesInfo;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -38,25 +36,5 @@ public class StackOverflowWebClient implements StackOverflowClient {
             .uri(COMMENTS_ENDPOINT, id)
             .retrieve()
             .bodyToMono(CommentsResponse.class);
-    }
-
-    @Override
-    public UpdatesInfo getUpdatesInfo(Link link, Integer answerCount, Integer commentCount) {
-        String path = link.getUrl().getPath();
-        String[] pathParts = path.split("/");
-        Long id = Long.parseLong(pathParts[pathParts.length - 2]);
-        QuestionResponse questionResponse = fetchQuestion(id).block();
-        CommentsResponse commentsResponse = fetchComments(id).block();
-        var question = questionResponse.items().getFirst();
-        if (question.lastActivityDate().isAfter(link.getUpdatedAt())) {
-            if (question.answerCount() > answerCount) {
-                return new UpdatesInfo(true, question.lastActivityDate(), "There is a new answer!");
-            }
-            if (commentsResponse.items().size() > commentCount) {
-                return new UpdatesInfo(true, question.lastActivityDate(), "There is a new comment!");
-            }
-            return new UpdatesInfo(true, question.lastActivityDate(), "The question has been updated!");
-        }
-        return new UpdatesInfo(false, question.lastActivityDate(), "There are no updates!");
     }
 }

@@ -67,7 +67,7 @@ public class ChatLink implements Serializable {
      */
     @jakarta.validation.constraints.NotNull
     @NotNull
-    public Long getLinkId() {
+    public Long linkId() {
         return this.linkId;
     }
 

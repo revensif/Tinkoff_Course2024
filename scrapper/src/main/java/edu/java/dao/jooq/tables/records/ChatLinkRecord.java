@@ -60,7 +60,7 @@ public class ChatLinkRecord extends UpdatableRecordImpl<ChatLinkRecord> implemen
      */
     @jakarta.validation.constraints.NotNull
     @NotNull
-    public Long getLinkId() {
+    public Long linkId() {
         return (Long) get(1);
     }
 
@@ -111,7 +111,7 @@ public class ChatLinkRecord extends UpdatableRecordImpl<ChatLinkRecord> implemen
     @Override
     @NotNull
     public Long component2() {
-        return getLinkId();
+        return linkId();
     }
 
     @Override
@@ -123,7 +123,7 @@ public class ChatLinkRecord extends UpdatableRecordImpl<ChatLinkRecord> implemen
     @Override
     @NotNull
     public Long value2() {
-        return getLinkId();
+        return linkId();
     }
 
     @Override
@@ -179,7 +179,7 @@ public class ChatLinkRecord extends UpdatableRecordImpl<ChatLinkRecord> implemen
 
         if (value != null) {
             setChatId(value.getChatId());
-            setLinkId(value.getLinkId());
+            setLinkId(value.linkId());
             resetChangedOnNotNull();
         }
     }

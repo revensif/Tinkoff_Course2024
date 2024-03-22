@@ -1,17 +1,19 @@
-package edu.java.dao.repository.jpa.entity;
+package edu.java.dto.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.MapsId;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
-@Getter
-@Setter
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "question")
 public class QuestionEntity {
 
@@ -24,8 +26,4 @@ public class QuestionEntity {
 
     @Column(name = "comment_count")
     private Integer commentCount;
-
-    @OneToOne
-    @MapsId
-    private LinkEntity link;
 }

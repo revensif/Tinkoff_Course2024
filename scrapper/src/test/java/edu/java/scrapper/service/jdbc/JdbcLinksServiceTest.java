@@ -1,10 +1,8 @@
 package edu.java.scrapper.service.jdbc;
 
-import edu.java.client.stackoverflow.StackOverflowClient;
 import edu.java.dao.repository.jdbc.JdbcChatLinkRepository;
 import edu.java.dao.repository.jdbc.JdbcChatRepository;
 import edu.java.dao.repository.jdbc.JdbcLinkRepository;
-import edu.java.dao.repository.jdbc.JdbcQuestionRepository;
 import edu.java.dto.request.AddLinkRequest;
 import edu.java.dto.request.RemoveLinkRequest;
 import edu.java.dto.response.LinkResponse;
@@ -12,19 +10,19 @@ import edu.java.dto.response.ListLinksResponse;
 import edu.java.exception.LinkAlreadyTrackedException;
 import edu.java.exception.LinkNotFoundException;
 import edu.java.scrapper.IntegrationTest;
-import edu.java.service.jdbc.JdbcLinksService;
+import edu.java.service.LinksService;
 import java.net.URI;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@SpringBootTest
+@SpringBootTest(properties = "app.database-access-type=jdbc")
+@Transactional
 public class JdbcLinksServiceTest extends IntegrationTest {
 
     private static final long FIRST_ID = 1L;
@@ -33,13 +31,7 @@ public class JdbcLinksServiceTest extends IntegrationTest {
     private static final URI SECOND_URL = URI.create("https://link1.com");
 
     @Autowired
-    private StackOverflowClient stackOverflowClient;
-
-    @Autowired
-    private JdbcQuestionRepository questionRepository;
-
-    @Autowired
-    private JdbcLinksService linksService;
+    private LinksService linksService;
 
     @Autowired
     private JdbcChatLinkRepository chatLinkRepository;
@@ -50,12 +42,7 @@ public class JdbcLinksServiceTest extends IntegrationTest {
     @Autowired
     private JdbcChatRepository chatRepository;
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
-
     @Test
-    @Transactional
-    @Rollback
     public void shouldAddLinkToDatabase() {
         //arrange
         AddLinkRequest request = new AddLinkRequest(FIRST_URL);
@@ -63,7 +50,7 @@ public class JdbcLinksServiceTest extends IntegrationTest {
         chatRepository.add(SECOND_ID);
         //act
         LinkResponse actual = linksService.add(FIRST_ID, request);
-        LinkResponse expected = new LinkResponse(linkRepository.findByUri(FIRST_URL).getLinkId(), FIRST_URL);
+        LinkResponse expected = new LinkResponse(linkRepository.findByUri(FIRST_URL).linkId(), FIRST_URL);
         //assert
         assertThat(actual).isEqualTo(expected);
         assertThat(chatLinkRepository.findAll().size()).isEqualTo(1);
@@ -75,9 +62,7 @@ public class JdbcLinksServiceTest extends IntegrationTest {
     }
 
     @Test
-    @Transactional
-    @Rollback
-    public void shouldRemoveLinkToDatabase() {
+    public void shouldRemoveLinkFromDatabase() {
         //arrange
         AddLinkRequest addRequest = new AddLinkRequest(FIRST_URL);
         RemoveLinkRequest removeRequest = new RemoveLinkRequest(FIRST_URL);
@@ -89,7 +74,7 @@ public class JdbcLinksServiceTest extends IntegrationTest {
         assertThat(linkRepository.findAll().size()).isEqualTo(1);
         assertThat(chatLinkRepository.findAll().size()).isEqualTo(2);
         LinkResponse actual = linksService.remove(FIRST_ID, removeRequest);
-        LinkResponse expected = new LinkResponse(linkRepository.findByUri(FIRST_URL).getLinkId(), FIRST_URL);
+        LinkResponse expected = new LinkResponse(linkRepository.findByUri(FIRST_URL).linkId(), FIRST_URL);
         //assert
         assertThat(actual).isEqualTo(expected);
         assertThat(linkRepository.findAll().size()).isEqualTo(1);
@@ -101,8 +86,6 @@ public class JdbcLinksServiceTest extends IntegrationTest {
     }
 
     @Test
-    @Transactional
-    @Rollback
     public void shouldListAllLinksByChatId() {
         //arrange
         AddLinkRequest firstAddRequest = new AddLinkRequest(FIRST_URL);
@@ -118,8 +101,8 @@ public class JdbcLinksServiceTest extends IntegrationTest {
         ListLinksResponse actual = linksService.listAll(FIRST_ID);
         ListLinksResponse expected = new ListLinksResponse(
             List.of(
-                new LinkResponse(linkRepository.findByUri(FIRST_URL).getLinkId(), FIRST_URL),
-                new LinkResponse(linkRepository.findByUri(SECOND_URL).getLinkId(), SECOND_URL)
+                new LinkResponse(linkRepository.findByUri(FIRST_URL).linkId(), FIRST_URL),
+                new LinkResponse(linkRepository.findByUri(SECOND_URL).linkId(), SECOND_URL)
             ),
             2
         );
@@ -127,5 +110,4 @@ public class JdbcLinksServiceTest extends IntegrationTest {
         assertThat(actual).isEqualTo(expected);
         assertThat(linksService.listAll(FIRST_ID).size()).isEqualTo(2);
     }
-
 }

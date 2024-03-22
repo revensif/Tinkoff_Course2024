@@ -6,7 +6,6 @@ import edu.java.dto.response.LinkResponse;
 import edu.java.dto.response.ListLinksResponse;
 import edu.java.service.LinksService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,7 +20,7 @@ public class LinksController {
 
     private final LinksService linksService;
 
-    public LinksController(@Qualifier("jdbcLinksService") LinksService linksService) {
+    public LinksController(LinksService linksService) {
         this.linksService = linksService;
     }
 

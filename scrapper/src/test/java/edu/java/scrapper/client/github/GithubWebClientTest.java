@@ -64,22 +64,4 @@ public class GithubWebClientTest {
         //assert
         assertThat(response).isEqualTo(EXPECTED_RESPONSE);
     }
-
-    @Test
-    public void shouldGetUpdatesInfo() {
-        //arrange
-        GithubClient client = new GithubWebClient(wireMockServer.baseUrl());
-        //act
-        UpdatesInfo firstUpdatesInfo = client.getUpdatesInfo(LINK);
-        LINK.setUpdatedAt(DATE_TIME.minusDays(1));
-        UpdatesInfo secondUpdatesInfo = client.getUpdatesInfo(LINK);
-        //assert
-        assertThat(firstUpdatesInfo.updatedAt()).isEqualTo(DATE_TIME);
-        assertThat(firstUpdatesInfo.isSomethingUpdated()).isFalse();
-        assertThat(firstUpdatesInfo.message()).isEqualTo("There are no updates!");
-
-        assertThat(secondUpdatesInfo.updatedAt()).isEqualTo(DATE_TIME);
-        assertThat(secondUpdatesInfo.isSomethingUpdated()).isTrue();
-        assertThat(secondUpdatesInfo.message()).isEqualTo("The repository has been updated!");
-    }
 }

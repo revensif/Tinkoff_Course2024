@@ -1,7 +1,6 @@
 package edu.java.scheduler;
 
 import edu.java.service.LinkUpdater;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -10,7 +9,7 @@ public class LinkUpdaterScheduler {
 
     private final LinkUpdater linkUpdater;
 
-    public LinkUpdaterScheduler(@Qualifier("jdbcLinkUpdater") LinkUpdater linkUpdater) {
+    public LinkUpdaterScheduler(LinkUpdater linkUpdater) {
         this.linkUpdater = linkUpdater;
     }
 

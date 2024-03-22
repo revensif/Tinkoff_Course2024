@@ -30,4 +30,29 @@ public class JooqQuestionRepository implements QuestionRepository {
             .where(QUESTION.LINK_ID.eq(linkId))
             .fetchOneInto(Question.class);
     }
+
+    @Override
+    public Question removeQuestion(long linkId) {
+        Question removedQuestion = findByLinkId(linkId);
+        dslContext.deleteFrom(QUESTION)
+            .where(QUESTION.LINK_ID.eq(linkId))
+            .execute();
+        return removedQuestion;
+    }
+
+    @Override
+    public void changeAnswerCount(long linkId, int answerCount) {
+        dslContext.update(QUESTION)
+            .set(QUESTION.ANSWER_COUNT, answerCount)
+            .where(QUESTION.LINK_ID.eq(linkId))
+            .execute();
+    }
+
+    @Override
+    public void changeCommentCount(long linkId, int commentCount) {
+        dslContext.update(QUESTION)
+            .set(QUESTION.COMMENT_COUNT, commentCount)
+            .where(QUESTION.LINK_ID.eq(linkId))
+            .execute();
+    }
 }

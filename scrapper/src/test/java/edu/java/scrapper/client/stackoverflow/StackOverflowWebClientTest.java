@@ -90,32 +90,4 @@ public class StackOverflowWebClientTest {
         //assert
         assertThat(response).isEqualTo(COMMENTS_EXPECTED_RESPONSE);
     }
-
-    @Test
-    public void shouldGetUpdatesInfo() {
-        //arrange
-        StackOverflowClient client = new StackOverflowWebClient(wireMockServer.baseUrl());
-        //act
-        UpdatesInfo firstUpdatesInfo = client.getUpdatesInfo(LINK, ANSWER_COUNT, 2);
-        LINK.setUpdatedAt(DATE_TIME.minusDays(1));
-        UpdatesInfo secondUpdatesInfo = client.getUpdatesInfo(LINK, ANSWER_COUNT - 1, 2);
-        UpdatesInfo thirdUpdatesInfo = client.getUpdatesInfo(LINK, ANSWER_COUNT, 1);
-        UpdatesInfo fourthUpdatesInfo = client.getUpdatesInfo(LINK, ANSWER_COUNT, 2);
-        //assert
-        assertThat(firstUpdatesInfo.updatedAt()).isEqualTo(DATE_TIME);
-        assertThat(firstUpdatesInfo.isSomethingUpdated()).isFalse();
-        assertThat(firstUpdatesInfo.message()).isEqualTo("There are no updates!");
-
-        assertThat(secondUpdatesInfo.updatedAt()).isEqualTo(DATE_TIME);
-        assertThat(secondUpdatesInfo.isSomethingUpdated()).isTrue();
-        assertThat(secondUpdatesInfo.message()).isEqualTo("There is a new answer!");
-
-        assertThat(thirdUpdatesInfo.updatedAt()).isEqualTo(DATE_TIME);
-        assertThat(thirdUpdatesInfo.isSomethingUpdated()).isTrue();
-        assertThat(thirdUpdatesInfo.message()).isEqualTo("There is a new comment!");
-
-        assertThat(fourthUpdatesInfo.updatedAt()).isEqualTo(DATE_TIME);
-        assertThat(fourthUpdatesInfo.isSomethingUpdated()).isTrue();
-        assertThat(fourthUpdatesInfo.message()).isEqualTo("The question has been updated!");
-    }
 }

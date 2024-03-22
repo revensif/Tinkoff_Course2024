@@ -9,68 +9,65 @@ import edu.java.dto.request.AddLinkRequest;
 import edu.java.dto.request.RemoveLinkRequest;
 import edu.java.dto.response.LinkResponse;
 import edu.java.dto.response.ListLinksResponse;
-import edu.java.dto.stackoverflow.CommentsResponse;
-import edu.java.dto.stackoverflow.QuestionResponse;
 import edu.java.exception.LinkAlreadyTrackedException;
 import edu.java.exception.LinkNotFoundException;
 import edu.java.service.LinksService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import static edu.java.utils.LinkUtils.STACKOVERFLOW;
+import reactor.core.publisher.Mono;
 
-@Service
 @RequiredArgsConstructor
+@Transactional
 public class JdbcLinksService implements LinksService {
 
     private final StackOverflowClient client;
     private final JdbcQuestionRepository questionRepository;
     private final JdbcLinkRepository linkRepository;
     private final JdbcChatLinkRepository chatLinkRepository;
+    private final List<String> resources;
 
     @Override
-    @Transactional
     public LinkResponse add(long tgChatId, AddLinkRequest request) {
         Link link = linkRepository.findByUri(request.url());
-        if ((link != null) && (chatLinkRepository.findByChatAndLinkIds(tgChatId, link.getLinkId()) != null)) {
+        if ((link != null) && (chatLinkRepository.findByChatAndLinkIds(tgChatId, link.linkId()) != null)) {
             throw new LinkAlreadyTrackedException();
         }
         if (link == null) {
             link = linkRepository.add(request.url());
-            if (link.getUrl().getHost().matches(STACKOVERFLOW)) {
-                QuestionResponse questionResponse = client.fetchQuestion(link.getLinkId()).block();
-                CommentsResponse commentsResponse = client.fetchComments(link.getLinkId()).block();
-                questionRepository.addQuestion(
-                    link.getLinkId(),
-                    questionResponse.items().getFirst().answerCount(),
-                    commentsResponse.items().size()
-                );
+            if (link.url().getHost().matches(resources.getLast())) {
+                long linkId = link.linkId();
+                Mono.zip(client.fetchQuestion(linkId), client.fetchComments(linkId))
+                    .doOnNext(response -> questionRepository.addQuestion(
+                        linkId,
+                        response.getT1().items().getFirst().answerCount(),
+                        response.getT2().items().size()
+                    ))
+                    .subscribe();
             }
         }
-        chatLinkRepository.add(tgChatId, link.getLinkId());
-        return new LinkResponse(link.getLinkId(), link.getUrl());
+        chatLinkRepository.add(tgChatId, link.linkId());
+        return new LinkResponse(link.linkId(), link.url());
     }
 
     @Override
-    @Transactional
     public LinkResponse remove(long tgChatId, RemoveLinkRequest request) {
         Link link = linkRepository.findByUri(request.url());
-        if ((link == null) || (chatLinkRepository.findByChatAndLinkIds(tgChatId, link.getLinkId()) == null)) {
+        if ((link == null) || (chatLinkRepository.findByChatAndLinkIds(tgChatId, link.linkId()) == null)) {
             throw new LinkNotFoundException();
         }
-        chatLinkRepository.remove(tgChatId, link.getLinkId());
-        if (chatLinkRepository.findAllChatsThatTrackThisLink(link.getLinkId()).isEmpty()) {
+        chatLinkRepository.remove(tgChatId, link.linkId());
+        if (chatLinkRepository.findAllChatsThatTrackThisLink(link.linkId()).isEmpty()) {
+            questionRepository.removeQuestion(link.linkId());
             linkRepository.remove(request.url());
         }
-        return new LinkResponse(link.getLinkId(), link.getUrl());
+        return new LinkResponse(link.linkId(), link.url());
     }
 
     @Override
-    @Transactional
     public ListLinksResponse listAll(long tgChatId) {
         List<LinkResponse> links = chatLinkRepository.findAllLinksTrackedByThisChat(tgChatId).stream()
-            .map((link) -> new LinkResponse(link.getLinkId(), link.getUrl()))
+            .map((link) -> new LinkResponse(link.linkId(), link.url()))
             .toList();
         return new ListLinksResponse(links, links.size());
     }
