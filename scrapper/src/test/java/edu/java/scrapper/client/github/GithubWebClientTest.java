@@ -3,10 +3,11 @@ package edu.java.scrapper.client.github;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import edu.java.client.github.GithubClient;
 import edu.java.client.github.GithubWebClient;
+import edu.java.dto.Link;
 import edu.java.dto.github.RepositoryResponse;
-
 import java.net.URI;
 import java.time.OffsetDateTime;
+import edu.java.dto.response.LinkResponse;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -16,7 +17,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class GithubWebClientTest {
 
+    private static final URI LINK_URL = URI.create("https://github.com/revensif/Tinkoff_Course2024");
     private static final String URL = "/repos/revensif/Tinkoff_Course2024";
+    private static final OffsetDateTime DATE_TIME = OffsetDateTime.parse("2024-02-23T16:23:19Z");
+    private static final Long REPOSITORY_ID = 182783L;
     private static final String OWNER = "revensif";
     private static final String REPO = "Tinkoff_Course2024";
     private static WireMockServer wireMockServer;
@@ -30,15 +34,19 @@ public class GithubWebClientTest {
         }
         """;
     private static final RepositoryResponse EXPECTED_RESPONSE = new RepositoryResponse(
-        182783L,
-        URI.create("https://github.com/revensif/Tinkoff_Course2024"),
-        OffsetDateTime.parse("2024-02-23T16:23:19Z")
+        REPOSITORY_ID,
+        LINK_URL,
+        DATE_TIME
     );
 
     @BeforeAll
     public static void beforeAll() {
         wireMockServer = new WireMockServer();
         wireMockServer.start();
+        wireMockServer.stubFor(get(URL)
+            .willReturn(aResponse()
+                .withHeader("Content-Type", "application/json")
+                .withBody(RESPONSE_BODY)));
     }
 
     @AfterAll
@@ -49,14 +57,10 @@ public class GithubWebClientTest {
     @Test
     public void shouldFetchRepository() {
         //arrange
-        wireMockServer.stubFor(get(URL)
-            .willReturn(aResponse()
-                .withHeader("Content-Type", "application/json")
-                .withBody(RESPONSE_BODY)));
         GithubClient client = new GithubWebClient(wireMockServer.baseUrl());
         //act
-        RepositoryResponse response = client.fetchRepository(OWNER, REPO).block();
+        RepositoryResponse actual = client.fetchRepository(OWNER, REPO).block();
         //assert
-        assertThat(response).isEqualTo(EXPECTED_RESPONSE);
+        assertThat(actual).isEqualTo(EXPECTED_RESPONSE);
     }
 }
