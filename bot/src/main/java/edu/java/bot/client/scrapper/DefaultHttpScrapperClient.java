@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -20,9 +21,13 @@ public class DefaultHttpScrapperClient implements HttpScrapperClient {
 
     private final WebClient webClient;
 
-    public DefaultHttpScrapperClient(@Value("${scrapper.base-url}") String baseUrl) {
+    public DefaultHttpScrapperClient(
+        @Value("${scrapper.base-url}") String baseUrl,
+        ExchangeFilterFunction filterFunction
+    ) {
         this.webClient = WebClient.builder()
             .baseUrl(baseUrl)
+            .filter(filterFunction)
             .build();
     }
 

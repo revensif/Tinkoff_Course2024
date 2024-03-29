@@ -3,6 +3,7 @@ package edu.java.scrapper.client.github;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import edu.java.client.github.GithubClient;
 import edu.java.client.github.GithubWebClient;
+import edu.java.configuration.retry.RetryBackoffConfigurationProperties;
 import edu.java.dto.Link;
 import edu.java.dto.github.RepositoryResponse;
 import java.net.URI;
@@ -11,17 +12,22 @@ import edu.java.updates.UpdatesInfo;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@SpringBootTest(properties = "retry.backoff-type=linear")
+@DirtiesContext
 public class GithubWebClientTest {
 
     private static final URI LINK_URL = URI.create("https://github.com/revensif/Tinkoff_Course2024");
     private static final String URL = "/repos/revensif/Tinkoff_Course2024";
     private static final OffsetDateTime DATE_TIME = OffsetDateTime.parse("2024-02-23T16:23:19Z");
     private static final Long REPOSITORY_ID = 182783L;
-    private static final Link LINK = new Link(REPOSITORY_ID, LINK_URL, DATE_TIME);
     private static final String OWNER = "revensif";
     private static final String REPO = "Tinkoff_Course2024";
     private static WireMockServer wireMockServer;
@@ -50,6 +56,12 @@ public class GithubWebClientTest {
                 .withBody(RESPONSE_BODY)));
     }
 
+    @Autowired
+    private RetryBackoffConfigurationProperties configurationProperties;
+
+    @Autowired
+    private ExchangeFilterFunction filterFunction;
+
     @AfterAll
     public static void afterAll() {
         wireMockServer.stop();
@@ -58,7 +70,7 @@ public class GithubWebClientTest {
     @Test
     public void shouldFetchRepository() {
         //arrange
-        GithubClient client = new GithubWebClient(wireMockServer.baseUrl());
+        GithubClient client = new GithubWebClient(wireMockServer.baseUrl(), filterFunction);
         //act
         RepositoryResponse response = client.fetchRepository(OWNER, REPO).block();
         //assert

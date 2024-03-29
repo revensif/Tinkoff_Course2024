@@ -2,6 +2,7 @@ package edu.java.bot.processor;
 
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
+import edu.java.bot.client.scrapper.HttpScrapperClient;
 import edu.java.bot.commands.Command;
 import edu.java.bot.commands.HelpCommand;
 import edu.java.bot.commands.ListCommand;
@@ -18,13 +19,13 @@ public class DefaultUserMessageProcessor implements UserMessageProcessor {
 
     private final List<Command> commands = new ArrayList<>();
 
-    public DefaultUserMessageProcessor() {
+    public DefaultUserMessageProcessor(HttpScrapperClient client) {
         this.commands.addAll(List.of(
-            new StartCommand(this),
-            new HelpCommand(this),
-            new TrackCommand(this),
-            new UntrackCommand(this),
-            new ListCommand(this)
+            new StartCommand(this, client),
+            new HelpCommand(this, client),
+            new TrackCommand(this, client),
+            new UntrackCommand(this, client),
+            new ListCommand(this, client)
         ));
     }
 

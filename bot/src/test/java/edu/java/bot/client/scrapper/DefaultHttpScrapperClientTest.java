@@ -1,6 +1,7 @@
 package edu.java.bot.client.scrapper;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
+import edu.java.bot.configuration.retry.RetryBackoffConfigurationProperties;
 import edu.java.bot.dto.request.AddLinkRequest;
 import edu.java.bot.dto.request.RemoveLinkRequest;
 import edu.java.bot.dto.response.LinkResponse;
@@ -10,6 +11,10 @@ import java.util.List;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.delete;
@@ -18,6 +23,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+@SpringBootTest(properties = "retry.backoff-type=constant")
+@DirtiesContext
 public class DefaultHttpScrapperClientTest {
 
     private static WireMockServer wireMockServer;
@@ -28,6 +35,12 @@ public class DefaultHttpScrapperClientTest {
     private static final URI SECOND_URI = URI.create("test2.com");
     private final LinkResponse firstResponse = new LinkResponse(1L, FIRST_URI);
     private final LinkResponse secondResponse = new LinkResponse(2L, SECOND_URI);
+
+    @Autowired
+    private RetryBackoffConfigurationProperties configurationProperties;
+
+    @Autowired
+    private ExchangeFilterFunction filterFunction;
 
     @BeforeAll
     public static void beforeAll() {
@@ -50,7 +63,7 @@ public class DefaultHttpScrapperClientTest {
                 .withHeader("Content-type", "application/json")
                 .withBody(expected)
             ));
-        HttpScrapperClient client = new DefaultHttpScrapperClient(wireMockServer.baseUrl());
+        HttpScrapperClient client = new DefaultHttpScrapperClient(wireMockServer.baseUrl(), filterFunction);
         //act
         String result = client.registerChat(ID).block();
         //assert
@@ -64,7 +77,7 @@ public class DefaultHttpScrapperClientTest {
             .willReturn(aResponse()
                 .withStatus(400)
             ));
-        HttpScrapperClient client = new DefaultHttpScrapperClient(wireMockServer.baseUrl());
+        HttpScrapperClient client = new DefaultHttpScrapperClient(wireMockServer.baseUrl(), filterFunction);
         //act + assert
         assertThrows(WebClientResponseException.BadRequest.class, () -> client.registerChat(ID).block());
     }
@@ -79,7 +92,7 @@ public class DefaultHttpScrapperClientTest {
                 .withHeader("Content-type", "application/json")
                 .withBody(expected)
             ));
-        HttpScrapperClient client = new DefaultHttpScrapperClient(wireMockServer.baseUrl());
+        HttpScrapperClient client = new DefaultHttpScrapperClient(wireMockServer.baseUrl(), filterFunction);
         //act
         String result = client.deleteChat(ID).block();
         //assert
@@ -93,7 +106,7 @@ public class DefaultHttpScrapperClientTest {
             .willReturn(aResponse()
                 .withStatus(400)
             ));
-        HttpScrapperClient client = new DefaultHttpScrapperClient(wireMockServer.baseUrl());
+        HttpScrapperClient client = new DefaultHttpScrapperClient(wireMockServer.baseUrl(), filterFunction);
         //act + assert
         assertThrows(WebClientResponseException.BadRequest.class, () -> client.deleteChat(ID).block());
     }
@@ -125,7 +138,7 @@ public class DefaultHttpScrapperClientTest {
                     }
                     """)
             ));
-        HttpScrapperClient client = new DefaultHttpScrapperClient(wireMockServer.baseUrl());
+        HttpScrapperClient client = new DefaultHttpScrapperClient(wireMockServer.baseUrl(), filterFunction);
         //act
         ListLinksResponse result = client.getAllLinks(ID).block();
         //assert
@@ -139,7 +152,7 @@ public class DefaultHttpScrapperClientTest {
             .willReturn(aResponse()
                 .withStatus(400)
             ));
-        HttpScrapperClient client = new DefaultHttpScrapperClient(wireMockServer.baseUrl());
+        HttpScrapperClient client = new DefaultHttpScrapperClient(wireMockServer.baseUrl(), filterFunction);
         //act + assert
         assertThrows(WebClientResponseException.BadRequest.class, () -> client.getAllLinks(ID).block());
     }
@@ -158,7 +171,7 @@ public class DefaultHttpScrapperClientTest {
                     }
                     """)
             ));
-        HttpScrapperClient client = new DefaultHttpScrapperClient(wireMockServer.baseUrl());
+        HttpScrapperClient client = new DefaultHttpScrapperClient(wireMockServer.baseUrl(), filterFunction);
         AddLinkRequest request = new AddLinkRequest(FIRST_URI);
         //act
         LinkResponse result = client.addLink(ID, request).block();
@@ -173,7 +186,7 @@ public class DefaultHttpScrapperClientTest {
             .willReturn(aResponse()
                 .withStatus(400)
             ));
-        HttpScrapperClient client = new DefaultHttpScrapperClient(wireMockServer.baseUrl());
+        HttpScrapperClient client = new DefaultHttpScrapperClient(wireMockServer.baseUrl(), filterFunction);
         AddLinkRequest request = new AddLinkRequest(FIRST_URI);
         //act + assert
         assertThrows(WebClientResponseException.BadRequest.class, () -> client.addLink(ID, request).block());
@@ -193,7 +206,7 @@ public class DefaultHttpScrapperClientTest {
                     }
                     """)
             ));
-        HttpScrapperClient client = new DefaultHttpScrapperClient(wireMockServer.baseUrl());
+        HttpScrapperClient client = new DefaultHttpScrapperClient(wireMockServer.baseUrl(), filterFunction);
         RemoveLinkRequest request = new RemoveLinkRequest(FIRST_URI);
         //act
         LinkResponse result = client.deleteLink(ID, request).block();
@@ -208,7 +221,7 @@ public class DefaultHttpScrapperClientTest {
             .willReturn(aResponse()
                 .withStatus(400)
             ));
-        HttpScrapperClient client = new DefaultHttpScrapperClient(wireMockServer.baseUrl());
+        HttpScrapperClient client = new DefaultHttpScrapperClient(wireMockServer.baseUrl(), filterFunction);
         RemoveLinkRequest request = new RemoveLinkRequest(FIRST_URI);
         //act + assert
         assertThrows(WebClientResponseException.BadRequest.class, () -> client.deleteLink(ID, request).block());

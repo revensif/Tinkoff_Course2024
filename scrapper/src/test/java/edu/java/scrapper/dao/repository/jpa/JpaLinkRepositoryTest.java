@@ -12,6 +12,7 @@ import edu.java.utils.EntityUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.transaction.annotation.Transactional;
 import static edu.java.utils.EntityUtils.createLinkEntity;
 import static edu.java.utils.EntityUtils.linkEntityToLink;
@@ -19,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(properties = "app.database-access-type=jpa")
 @Transactional
+@DirtiesContext
 public class JpaLinkRepositoryTest extends IntegrationTest {
 
     private static final String FIRST_URL = "link1.com";

@@ -4,6 +4,7 @@ import com.pengrad.telegrambot.model.Chat;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
+import edu.java.bot.client.scrapper.HttpScrapperClient;
 import edu.java.bot.processor.DefaultUserMessageProcessor;
 import edu.java.bot.processor.UserMessageProcessor;
 import org.junit.Test;
@@ -14,8 +15,9 @@ import static org.mockito.Mockito.when;
 
 public class HelpCommandTest {
 
-    private final UserMessageProcessor processor = new DefaultUserMessageProcessor();
-    private final Command helpCommand = new HelpCommand(processor);
+    private final HttpScrapperClient client = mock(HttpScrapperClient.class);
+    private final UserMessageProcessor processor = new DefaultUserMessageProcessor(client);
+    private final Command helpCommand = new HelpCommand(processor, client);
 
     @Test
     @DisplayName("Command name and description Test")

@@ -4,18 +4,23 @@ import com.pengrad.telegrambot.model.Chat;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
+import edu.java.bot.client.scrapper.HttpScrapperClient;
 import edu.java.bot.commands.ListCommand;
 import edu.java.bot.commands.StartCommand;
+import edu.java.bot.dto.response.ListLinksResponse;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
+import reactor.core.publisher.Mono;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class DefaultUserMessageProcessorTest {
 
-    private final UserMessageProcessor processor = new DefaultUserMessageProcessor();
+    private final HttpScrapperClient client = mock(HttpScrapperClient.class);
+    private final UserMessageProcessor processor = new DefaultUserMessageProcessor(client);
     private Update update;
     private Message message;
 
@@ -40,10 +45,17 @@ public class DefaultUserMessageProcessorTest {
     @Test
     @DisplayName("Process test : Correct command")
     public void shouldReturnCorrectResponse() {
+        //arrange
         when(update.message()).thenReturn(message);
         when(message.text()).thenReturn("/list");
+        Mono<ListLinksResponse> linksResponse = Mono.just(
+            new ListLinksResponse(null, 0)
+        );
+        when(client.getAllLinks(any(Long.class))).thenReturn(linksResponse);
+        //act
         SendMessage response = processor.process(update);
-        assertThat(response.getParameters().get("text")).isEqualTo("It is not tracked because there is no database");
+        //assert
+        assertThat(response.getParameters().get("text")).isEqualTo("You are not tracking any links");
     }
 
     @Test
