@@ -5,7 +5,6 @@ import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
 import edu.java.bot.client.scrapper.HttpScrapperClient;
-import edu.java.bot.dto.response.LinkResponse;
 import edu.java.bot.dto.response.ListLinksResponse;
 import edu.java.bot.processor.DefaultUserMessageProcessor;
 import edu.java.bot.processor.UserMessageProcessor;

@@ -67,7 +67,7 @@ public class UntrackCommandTest {
         //act
         SendMessage response = untrackCommand.handle(update);
         //assert
-            assertThat(response.getParameters().get("text")).isEqualTo(
+        assertThat(response.getParameters().get("text")).isEqualTo(
             "Incorrect input, try /track https://stackoverflow.com");
     }
 }
