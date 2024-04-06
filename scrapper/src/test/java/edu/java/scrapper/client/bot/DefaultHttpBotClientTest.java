@@ -7,6 +7,7 @@ import edu.java.configuration.retry.RetryBackoffConfigurationProperties;
 import edu.java.dto.request.LinkUpdateRequest;
 import java.net.URI;
 import java.util.ArrayList;
+import edu.java.scrapper.IntegrationTest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -20,9 +21,9 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@SpringBootTest(properties = "retry.backoff-type=constant")
+@SpringBootTest(properties = {"retry.backoff-type=constant", "app.use-queue=false"})
 @DirtiesContext
-public class DefaultHttpBotClientTest {
+public class DefaultHttpBotClientTest extends IntegrationTest {
 
     private static WireMockServer wireMockServer;
     private static final String URL = "/updates";

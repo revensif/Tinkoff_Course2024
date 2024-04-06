@@ -1,6 +1,5 @@
 package edu.java.scrapper.service.jdbc;
 
-import edu.java.client.bot.HttpBotClient;
 import edu.java.client.github.GithubClient;
 import edu.java.client.stackoverflow.StackOverflowClient;
 import edu.java.dao.repository.jdbc.JdbcChatLinkRepository;
@@ -13,6 +12,7 @@ import edu.java.dto.stackoverflow.CommentsResponse;
 import edu.java.dto.stackoverflow.QuestionResponse;
 import edu.java.scrapper.IntegrationTest;
 import edu.java.service.jdbc.JdbcLinkUpdater;
+import edu.java.service.notification.GeneralNotificationService;
 import java.net.URI;
 import java.time.Duration;
 import java.time.OffsetDateTime;
@@ -60,7 +60,7 @@ public class JdbcLinkUpdaterTest extends IntegrationTest {
     private StackOverflowClient stackOverflowClient;
 
     @Mock
-    private HttpBotClient httpBotClient;
+    private GeneralNotificationService notificationService;
 
     @Mock
     private List<String> resources;

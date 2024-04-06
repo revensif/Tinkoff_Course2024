@@ -1,6 +1,5 @@
 package edu.java.scrapper.service.jpa;
 
-import edu.java.client.bot.HttpBotClient;
 import edu.java.client.github.GithubClient;
 import edu.java.client.stackoverflow.StackOverflowClient;
 import edu.java.dao.repository.jpa.JpaChatRepository;
@@ -14,6 +13,7 @@ import edu.java.dto.stackoverflow.CommentsResponse;
 import edu.java.dto.stackoverflow.QuestionResponse;
 import edu.java.scrapper.IntegrationTest;
 import edu.java.service.jpa.JpaLinkUpdater;
+import edu.java.service.notification.GeneralNotificationService;
 import java.net.URI;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
@@ -63,7 +63,7 @@ public class JpaLinkUpdaterTest extends IntegrationTest {
     private StackOverflowClient stackOverflowClient;
 
     @Mock
-    private HttpBotClient httpBotClient;
+    private GeneralNotificationService notificationService;
 
     @Mock
     private List<String> resources;

@@ -7,6 +7,7 @@ app:
     enable: true
     interval: 10s
     force-check-delay: 10s
+  use-queue: true
 
 retry:
   max-attempts: 2
@@ -16,6 +17,16 @@ retry:
   max-delay: 100s
   multiplier: 2.2
   statuses: 500, 501, 502, 503, 504, 505, 506, 507, 508, 509, 510, 511, 520, 521, 522, 523, 524, 525, 526
+
+kafka:
+  topic: messages.updates
+  bootstrap-servers: localhost:29091, localhost:29092
+  client-id: scrapper
+  acks-mode: all
+  delivery-timeout: 60s
+  linger-ms: 12_000
+  batch-size: 100_000
+  enable-idempotence: true # to handle specific retry errors
 
 spring:
   application:

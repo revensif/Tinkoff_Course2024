@@ -1,5 +1,7 @@
 app:
   telegram-token: ${TOKEN}
+  scrapper-topic:
+    name: messages.updates
 
 retry:
   max-attempts: 2
@@ -9,6 +11,23 @@ retry:
   max-delay: 100s
   multiplier: 2.2
   statuses: 500, 501, 502, 503, 504, 505, 506, 507, 508, 509, 510, 511, 520, 521, 522, 523, 524, 525, 526
+
+kafka:
+  bootstrap-servers: localhost:29091, localhost:29092
+  group-id: bot
+  auto-offset-reset: latest
+  max-poll-interval-ms: 300_000
+  enable-auto-commit: false
+  concurrency: 2
+  dlq:
+    topic: messages.updates_dlq
+    replications: 2
+    partitions: 2
+    acks-mode: all
+    delivery-timeout: 60s
+    linger-ms: 12_000
+    batch-size: 100_000
+
 
 spring:
   application:

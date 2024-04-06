@@ -1,6 +1,5 @@
 package edu.java.configuration;
 
-import edu.java.client.bot.HttpBotClient;
 import edu.java.client.github.GithubClient;
 import edu.java.client.stackoverflow.StackOverflowClient;
 import edu.java.dao.repository.jpa.JpaChatRepository;
@@ -12,6 +11,7 @@ import edu.java.service.TgChatService;
 import edu.java.service.jpa.JpaLinkUpdater;
 import edu.java.service.jpa.JpaLinksService;
 import edu.java.service.jpa.JpaTgChatService;
+import edu.java.service.notification.GeneralNotificationService;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -45,7 +45,7 @@ public class JpaConfig {
         JpaChatRepository chatRepository,
         GithubClient githubClient,
         StackOverflowClient stackOverflowClient,
-        HttpBotClient httpBotClient,
+        GeneralNotificationService notificationService,
         @Value("#{@resources}") List<String> resources
     ) {
         return new JpaLinkUpdater(
@@ -54,7 +54,7 @@ public class JpaConfig {
             chatRepository,
             githubClient,
             stackOverflowClient,
-            httpBotClient,
+            notificationService,
             resources
         );
     }

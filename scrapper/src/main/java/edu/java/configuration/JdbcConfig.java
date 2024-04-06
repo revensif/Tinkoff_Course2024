@@ -1,6 +1,5 @@
 package edu.java.configuration;
 
-import edu.java.client.bot.HttpBotClient;
 import edu.java.client.github.GithubClient;
 import edu.java.client.stackoverflow.StackOverflowClient;
 import edu.java.dao.repository.jdbc.JdbcChatLinkRepository;
@@ -13,6 +12,7 @@ import edu.java.service.TgChatService;
 import edu.java.service.jdbc.JdbcLinkUpdater;
 import edu.java.service.jdbc.JdbcLinksService;
 import edu.java.service.jdbc.JdbcTgChatService;
+import edu.java.service.notification.GeneralNotificationService;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -46,7 +46,7 @@ public class JdbcConfig {
         JdbcChatLinkRepository chatLinkRepository,
         GithubClient githubClient,
         StackOverflowClient stackOverflowClient,
-        HttpBotClient httpBotClient,
+        GeneralNotificationService notificationService,
         @Value("#{@resources}") List<String> resources
     ) {
         return new JdbcLinkUpdater(
@@ -55,7 +55,7 @@ public class JdbcConfig {
             chatLinkRepository,
             githubClient,
             stackOverflowClient,
-            httpBotClient,
+            notificationService,
             resources
         );
     }

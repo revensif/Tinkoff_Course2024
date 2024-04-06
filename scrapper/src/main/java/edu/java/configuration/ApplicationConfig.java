@@ -26,7 +26,10 @@ public record ApplicationConfig(
 
     @NotNull
     @Bean
-    List<String> resources
+    List<String> resources,
+
+    @NotNull
+    boolean useQueue
 ) {
     public record Scheduler(boolean enable, @NotNull Duration interval, @NotNull Duration forceCheckDelay) {
     }

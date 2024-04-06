@@ -1,6 +1,5 @@
 package edu.java.service.jdbc;
 
-import edu.java.client.bot.HttpBotClient;
 import edu.java.client.github.GithubClient;
 import edu.java.client.stackoverflow.StackOverflowClient;
 import edu.java.dao.repository.jdbc.JdbcChatLinkRepository;
@@ -10,6 +9,7 @@ import edu.java.dto.Link;
 import edu.java.dto.Question;
 import edu.java.dto.request.LinkUpdateRequest;
 import edu.java.service.LinkUpdater;
+import edu.java.service.notification.GeneralNotificationService;
 import edu.java.updates.UpdatesInfo;
 import java.time.Duration;
 import java.util.List;
@@ -26,7 +26,7 @@ public class JdbcLinkUpdater implements LinkUpdater {
     private final JdbcChatLinkRepository chatLinkRepository;
     private final GithubClient githubClient;
     private final StackOverflowClient stackOverflowClient;
-    private final HttpBotClient httpBotClient;
+    private final GeneralNotificationService notificationService;
     private static final Duration THRESHOLD = Duration.ofDays(10);
     private final List<String> resources;
 
@@ -46,7 +46,7 @@ public class JdbcLinkUpdater implements LinkUpdater {
                 fetchStackoverflowQuestionAndComment(pathParts, updatesInfo, linkId);
             }
             if (updatesInfo.getUpdatedAt().isAfter(link.updatedAt())) {
-                httpBotClient.sendUpdate(new LinkUpdateRequest(
+                notificationService.sendUpdate(new LinkUpdateRequest(
                     linkId,
                     link.url(),
                     updatesInfo.getMessage(),

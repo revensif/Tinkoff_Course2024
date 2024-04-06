@@ -11,6 +11,7 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
+import edu.java.scrapper.IntegrationTest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -24,9 +25,9 @@ import static edu.java.scrapper.client.stackoverflow.StackOverflowJsonResponse.C
 import static edu.java.scrapper.client.stackoverflow.StackOverflowJsonResponse.QUESTION_RESPONSE_BODY;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(properties = "retry.backoff-type=exponential")
+@SpringBootTest(properties = {"retry.backoff-type=exponential", "app.use-queue=false"})
 @DirtiesContext
-public class StackOverflowWebClientTest {
+public class StackOverflowWebClientTest extends IntegrationTest {
 
     private static final URI LINK_URL = URI.create("https://stackoverflow.com/questions/12345/test_for_hw2");
     private static final String QUESTION_URL = "/questions/12345?site=stackoverflow";

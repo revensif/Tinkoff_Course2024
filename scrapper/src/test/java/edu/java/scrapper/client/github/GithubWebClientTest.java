@@ -8,6 +8,7 @@ import edu.java.dto.Link;
 import edu.java.dto.github.RepositoryResponse;
 import java.net.URI;
 import java.time.OffsetDateTime;
+import edu.java.scrapper.IntegrationTest;
 import edu.java.updates.UpdatesInfo;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -20,9 +21,9 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(properties = "retry.backoff-type=linear")
+@SpringBootTest(properties = {"retry.backoff-type=linear", "app.use-queue=false"})
 @DirtiesContext
-public class GithubWebClientTest {
+public class GithubWebClientTest extends IntegrationTest {
 
     private static final URI LINK_URL = URI.create("https://github.com/revensif/Tinkoff_Course2024");
     private static final String URL = "/repos/revensif/Tinkoff_Course2024";
