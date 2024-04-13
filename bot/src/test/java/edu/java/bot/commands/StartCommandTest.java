@@ -7,6 +7,8 @@ import com.pengrad.telegrambot.request.SendMessage;
 import edu.java.bot.client.scrapper.HttpScrapperClient;
 import edu.java.bot.processor.DefaultUserMessageProcessor;
 import edu.java.bot.processor.UserMessageProcessor;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
 import reactor.core.publisher.Mono;
@@ -17,8 +19,9 @@ import static org.mockito.Mockito.when;
 
 public class StartCommandTest {
 
+    private final MeterRegistry registry = new SimpleMeterRegistry();
     private final HttpScrapperClient client = mock(HttpScrapperClient.class);
-    private final UserMessageProcessor processor = new DefaultUserMessageProcessor(client);
+    private final UserMessageProcessor processor = new DefaultUserMessageProcessor(client, registry);
     private final Command startCommand = new StartCommand(processor, client);
 
     @Test
@@ -43,6 +46,7 @@ public class StartCommandTest {
         //act
         SendMessage response = startCommand.handle(update);
         //assert
-        assertThat(response.getParameters().get("text")).isEqualTo("The bot is already working");
+        assertThat(response.getParameters()
+            .get("text")).isEqualTo("Bot Started! Now you can track the available sites");
     }
 }

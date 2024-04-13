@@ -11,6 +11,8 @@ import edu.java.bot.commands.StartCommand;
 import edu.java.bot.configuration.ApplicationConfig;
 import edu.java.bot.processor.DefaultUserMessageProcessor;
 import edu.java.bot.processor.UserMessageProcessor;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.util.List;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
@@ -25,6 +27,7 @@ import static org.mockito.Mockito.when;
 @Component
 public class DefaultBotTest {
 
+    private final MeterRegistry registry = new SimpleMeterRegistry();
     private final HttpScrapperClient client = mock(HttpScrapperClient.class);
 
     @Test
@@ -49,7 +52,7 @@ public class DefaultBotTest {
     @DisplayName("Process test")
     public void shouldProcessUpdates() {
         //arrange
-        UserMessageProcessor processor = new DefaultUserMessageProcessor(client);
+        UserMessageProcessor processor = new DefaultUserMessageProcessor(client, registry);
         Update update = mock(Update.class);
         Message message = mock(Message.class);
         Chat chat = mock(Chat.class);
@@ -62,7 +65,9 @@ public class DefaultBotTest {
             new DefaultBot(new ApplicationConfig(token, new ApplicationConfig.ScrapperTopic("topic")), processor);
         //act
         int process = bot.process(List.of(update));
+        double messagesProcessedNumber = registry.counter("messages_processed_number").count();
         //assert
         assertThat(process).isEqualTo(-1);
+        assertThat(messagesProcessedNumber).isEqualTo(1.0);
     }
 }

@@ -10,6 +10,8 @@ import edu.java.bot.dto.response.LinkResponse;
 import edu.java.bot.processor.DefaultUserMessageProcessor;
 import edu.java.bot.processor.UserMessageProcessor;
 import java.net.URI;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
@@ -21,8 +23,9 @@ import static org.mockito.Mockito.when;
 
 public class TrackCommandTest {
 
+    private final MeterRegistry registry = new SimpleMeterRegistry();
     private final HttpScrapperClient client = mock(HttpScrapperClient.class);
-    private final UserMessageProcessor processor = new DefaultUserMessageProcessor(client);
+    private final UserMessageProcessor processor = new DefaultUserMessageProcessor(client, registry);
     private final Command trackCommand = new TrackCommand(processor, client);
     private Update update;
     private Message message;
@@ -55,7 +58,7 @@ public class TrackCommandTest {
         //act
         SendMessage response = trackCommand.handle(update);
         //assert
-        assertThat(response.getParameters().get("text")).isEqualTo("The link is already being tracked");
+        assertThat(response.getParameters().get("text")).isEqualTo("Now you are tracking this link");
     }
 
     @Test

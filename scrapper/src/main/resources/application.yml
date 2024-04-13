@@ -7,7 +7,7 @@ app:
     enable: true
     interval: 10s
     force-check-delay: 10s
-  use-queue: true
+  use-queue: false
 
 retry:
   max-attempts: 2
@@ -27,6 +27,20 @@ kafka:
   linger-ms: 12_000
   batch-size: 100_000
   enable-idempotence: true # to handle specific retry errors
+
+management:
+  server:
+    port: 8081
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  endpoints:
+    web:
+      base-path: /
+      exposure:
+        include: "info,health,prometheus"
+      path-mapping:
+        prometheus: "metrics"
 
 spring:
   application:
@@ -68,7 +82,7 @@ springdoc:
     path: /swagger-ui.html
 
 bot:
-  base-url: https://localhost:8090
+  base-url: http://localhost:8090
 
 logging:
   config: classpath:log4j2-plain.xml

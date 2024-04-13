@@ -28,6 +28,19 @@ kafka:
     linger-ms: 12_000
     batch-size: 100_000
 
+management:
+  server:
+    port: 8091
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  endpoints:
+    web:
+      base-path: /
+      exposure:
+        include: "info,health,prometheus"
+      path-mapping:
+        prometheus: "metrics"
 
 spring:
   application:
@@ -66,7 +79,7 @@ springdoc:
     path: /swagger-ui.html
 
 scrapper:
-  base-url: https://localhost:8080
+  base-url: http://localhost:8080
 
 logging:
   config: classpath:log4j2-plain.xml

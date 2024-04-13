@@ -3,6 +3,7 @@ package edu.java.bot.commands;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
 import edu.java.bot.client.scrapper.HttpScrapperClient;
+import edu.java.bot.commands.entities.Text;
 import edu.java.bot.dto.request.RemoveLinkRequest;
 import edu.java.bot.dto.response.LinkResponse;
 import edu.java.bot.processor.UserMessageProcessor;
@@ -46,16 +47,16 @@ public class UntrackCommand extends AbstractCommand {
             return new SendMessage(chatId, INCORRECT_LINK);
         }
         Link link = parse(url);
-        SendMessage sendMessage = new SendMessage(chatId, "This link is already not tracked");
+        Text text = new Text("This link is already not tracked");
         client.deleteLink(chatId, new RemoveLinkRequest(URI.create(link.toString())))
-            .doOnNext(response -> handleClientResponse(response, chatId, sendMessage))
+            .doOnNext(response -> handleClientResponse(response, text))
             .subscribe();
-        return sendMessage;
+        return new SendMessage(chatId, text.getText());
     }
 
-    private void handleClientResponse(LinkResponse response, long chatId, SendMessage sendMessage) {
+    private void handleClientResponse(LinkResponse response, Text text) {
         if (response.id() != null) {
-            sendMessage = new SendMessage(chatId, "The link is no longer being tracked");
+            text.setText("The link is no longer being tracked");
         }
     }
 }

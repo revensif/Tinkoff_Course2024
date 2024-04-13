@@ -3,6 +3,7 @@ package edu.java.bot.commands;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
 import edu.java.bot.client.scrapper.HttpScrapperClient;
+import edu.java.bot.commands.entities.Text;
 import edu.java.bot.dto.request.AddLinkRequest;
 import edu.java.bot.dto.response.LinkResponse;
 import edu.java.bot.processor.UserMessageProcessor;
@@ -46,16 +47,16 @@ public class TrackCommand extends AbstractCommand {
             return new SendMessage(chatId, INCORRECT_LINK);
         }
         Link link = parse(url);
-        SendMessage sendMessage = new SendMessage(chatId, "The link is already being tracked");
+        Text text = new Text("The link is already being tracked");
         client.addLink(chatId, new AddLinkRequest(URI.create(link.toString())))
-            .doOnNext(response -> handleClientResponse(response, chatId, sendMessage))
+            .doOnNext(response -> handleClientResponse(response, text))
             .subscribe();
-        return sendMessage;
+        return new SendMessage(chatId, text.getText());
     }
 
-    private void handleClientResponse(LinkResponse response, long chatId, SendMessage sendMessage) {
+    private void handleClientResponse(LinkResponse response, Text text) {
         if (response.id() != null) {
-            sendMessage = new SendMessage(chatId, "Now you are tracking this link");
+            text.setText("Now you are tracking this link");
         }
     }
 }
