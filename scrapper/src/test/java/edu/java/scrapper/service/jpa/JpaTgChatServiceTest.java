@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
-import static edu.java.utils.EntityUtils.chatToChatEntity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -37,10 +36,7 @@ public class JpaTgChatServiceTest extends IntegrationTest {
         assertThat(chatRepository.findAll().size()).isEqualTo(1);
         assertThat(tgChatService.register(SECOND_ID)).isEqualTo(SECOND_CHAT);
         assertThat(chatRepository.findAll().size()).isEqualTo(2);
-        assertThat(chatRepository.findAll()).isEqualTo(List.of(
-            chatToChatEntity(FIRST_CHAT),
-            chatToChatEntity(SECOND_CHAT)
-        ));
+        assertThat(chatRepository.findAll()).isEqualTo(List.of(FIRST_CHAT, SECOND_CHAT));
         assertThrows(ChatAlreadyRegisteredException.class, () -> tgChatService.register(FIRST_ID));
     }
 

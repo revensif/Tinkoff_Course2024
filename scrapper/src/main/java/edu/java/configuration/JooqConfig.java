@@ -1,13 +1,13 @@
 package edu.java.configuration;
 
 import edu.java.client.bot.HttpBotClient;
-import edu.java.client.github.GithubClient;
 import edu.java.client.stackoverflow.StackOverflowClient;
 import edu.java.dao.repository.jooq.JooqChatLinkRepository;
 import edu.java.dao.repository.jooq.JooqChatRepository;
 import edu.java.dao.repository.jooq.JooqLinkRepository;
 import edu.java.dao.repository.jooq.JooqQuestionRepository;
 import edu.java.service.LinkUpdater;
+import edu.java.service.LinkUpdaterFetcher;
 import edu.java.service.LinksService;
 import edu.java.service.TgChatService;
 import edu.java.service.jooq.JooqLinkUpdater;
@@ -51,22 +51,16 @@ public class JooqConfig {
 
     @Bean
     public LinkUpdater jooqLinkUpdater(
-        JooqQuestionRepository questionRepository,
         JooqLinkRepository linkRepository,
         JooqChatLinkRepository chatLinkRepository,
-        GithubClient githubClient,
-        StackOverflowClient stackOverflowClient,
         HttpBotClient httpBotClient,
-        @Value("#{@resources}") List<String> resources
+        LinkUpdaterFetcher linkUpdaterFetcher
     ) {
         return new JooqLinkUpdater(
-            questionRepository,
             linkRepository,
             chatLinkRepository,
-            githubClient,
-            stackOverflowClient,
             httpBotClient,
-            resources
+            linkUpdaterFetcher
         );
     }
 }

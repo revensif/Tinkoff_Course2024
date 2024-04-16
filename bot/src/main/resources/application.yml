@@ -1,4 +1,7 @@
 app:
+  resources:
+    - github.com
+    - stackoverflow.com
   telegram-token: ${TOKEN}
 
 spring:

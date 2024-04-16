@@ -20,7 +20,7 @@ public class JdbcChatLinkRepository implements ChatLinkRepository {
     @Override
     public ChatLink add(long tgChatId, long linkId) {
         jdbcTemplate.update("INSERT INTO chat_link VALUES (?, ?)", tgChatId, linkId);
-        return new ChatLink(tgChatId, linkId);
+        return findByChatAndLinkIds(tgChatId, linkId);
     }
 
     @Override

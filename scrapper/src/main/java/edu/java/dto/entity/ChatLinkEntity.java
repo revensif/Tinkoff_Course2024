@@ -2,11 +2,10 @@ package edu.java.dto.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
 import jakarta.persistence.Table;
-import java.time.OffsetDateTime;
+import java.io.Serializable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,17 +16,21 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "link")
-public class LinkEntity {
+@Table(name = "chat_link")
+@IdClass(ChatLinkEntity.DoubleKey.class)
+public class ChatLinkEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "chat_id")
+    private Long chatId;
+
+    @Id
     @Column(name = "link_id")
     private Long linkId;
 
-    @Column(name = "url", unique = true)
-    private String url;
-
-    @Column(name = "updated_at")
-    private OffsetDateTime updatedAt;
+    @Data
+    public static class DoubleKey implements Serializable {
+        private long chatId;
+        private long linkId;
+    }
 }

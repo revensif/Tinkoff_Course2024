@@ -12,6 +12,10 @@ import edu.java.dto.github.RepositoryResponse;
 import edu.java.dto.stackoverflow.CommentsResponse;
 import edu.java.dto.stackoverflow.QuestionResponse;
 import edu.java.scrapper.IntegrationTest;
+import edu.java.service.LinkUpdaterFetcher;
+import edu.java.service.UpdateChecker;
+import edu.java.service.checker.GithubUpdateChecker;
+import edu.java.service.checker.StackOverflowUpdateChecker;
 import edu.java.service.jooq.JooqLinkUpdater;
 import java.net.URI;
 import java.time.Duration;
@@ -43,15 +47,11 @@ public class JooqLinkUpdaterTest extends IntegrationTest {
     private static final URI GITHUB_URL = URI.create("https://github.com/revensif/Tinkoff_Course2024");
     private static final URI STACKOVERFLOW_URL = URI.create("https://stackoverflow.com/questions/12345/test_for_hw5");
     private static final OffsetDateTime OLD_DATE = OffsetDateTime.now().minusDays(11L).truncatedTo(ChronoUnit.MILLIS);
+    private static final Link FIRST_LINK = new Link(FIRST_ID, GITHUB_URL, OLD_DATE);
+    private static final Link SECOND_LINK = new Link(SECOND_ID, STACKOVERFLOW_URL, OLD_DATE);
 
     @Mock
     private JooqQuestionRepository questionRepository;
-
-    @Mock
-    private JooqLinkRepository linkRepository;
-
-    @Mock
-    private JooqChatLinkRepository chatLinkRepository;
 
     @Mock
     private GithubClient githubClient;
@@ -63,7 +63,13 @@ public class JooqLinkUpdaterTest extends IntegrationTest {
     private HttpBotClient httpBotClient;
 
     @Mock
-    private List<String> resources;
+    private JooqLinkRepository linkRepository;
+
+    @Mock
+    private JooqChatLinkRepository chatLinkRepository;
+
+    @Mock
+    private LinkUpdaterFetcher linkUpdaterFetcher;
 
     @InjectMocks
     private JooqLinkUpdater linkUpdater;
@@ -74,8 +80,7 @@ public class JooqLinkUpdaterTest extends IntegrationTest {
     public void shouldUpdateAndGetTwoOutdatedLinks() {
         //arrange
         List<Link> outdatedLinks = Arrays.asList(
-            new Link(FIRST_ID, GITHUB_URL, OLD_DATE),
-            new Link(SECOND_ID, STACKOVERFLOW_URL, OLD_DATE)
+            FIRST_LINK, SECOND_LINK
         );
         Mono<RepositoryResponse> repositoryResponse = Mono.just(
             new RepositoryResponse(FIRST_ID, GITHUB_URL, OffsetDateTime.now())
@@ -92,14 +97,18 @@ public class JooqLinkUpdaterTest extends IntegrationTest {
             List.of(new CommentsResponse.ItemResponse(FIRST_ID))
         ));
         Question question = new Question(FIRST_ID, ANSWER_COUNT - 2, 1);
-
+        UpdateChecker githubChecker = new GithubUpdateChecker(githubClient);
+        UpdateChecker stackOverflowChecker = new StackOverflowUpdateChecker(
+            questionRepository,
+            stackOverflowClient
+        );
         when(linkRepository.findOutdatedLinks(any(Duration.class))).thenReturn(outdatedLinks);
         when(questionRepository.findByLinkId(any(Long.class))).thenReturn(question);
         when(githubClient.fetchRepository(OWNER, REPO)).thenReturn(repositoryResponse);
         when(stackOverflowClient.fetchQuestion(QUESTION_ID)).thenReturn(questionResponse);
         when(stackOverflowClient.fetchComments(QUESTION_ID)).thenReturn(commentsResponse);
-        when(resources.getFirst()).thenReturn("github.com");
-        when(resources.getLast()).thenReturn("stackoverflow.com");
+        when(linkUpdaterFetcher.getUpdateChecker(FIRST_LINK)).thenReturn(githubChecker);
+        when(linkUpdaterFetcher.getUpdateChecker(SECOND_LINK)).thenReturn(stackOverflowChecker);
         //act
         int actual = linkUpdater.update();
         //assert

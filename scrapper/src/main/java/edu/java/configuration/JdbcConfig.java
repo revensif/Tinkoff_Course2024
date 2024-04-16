@@ -1,13 +1,13 @@
 package edu.java.configuration;
 
 import edu.java.client.bot.HttpBotClient;
-import edu.java.client.github.GithubClient;
 import edu.java.client.stackoverflow.StackOverflowClient;
 import edu.java.dao.repository.jdbc.JdbcChatLinkRepository;
 import edu.java.dao.repository.jdbc.JdbcChatRepository;
 import edu.java.dao.repository.jdbc.JdbcLinkRepository;
 import edu.java.dao.repository.jdbc.JdbcQuestionRepository;
 import edu.java.service.LinkUpdater;
+import edu.java.service.LinkUpdaterFetcher;
 import edu.java.service.LinksService;
 import edu.java.service.TgChatService;
 import edu.java.service.jdbc.JdbcLinkUpdater;
@@ -41,22 +41,16 @@ public class JdbcConfig {
 
     @Bean
     public LinkUpdater jdbcLinkUpdater(
-        JdbcQuestionRepository questionRepository,
         JdbcLinkRepository linkRepository,
         JdbcChatLinkRepository chatLinkRepository,
-        GithubClient githubClient,
-        StackOverflowClient stackOverflowClient,
         HttpBotClient httpBotClient,
-        @Value("#{@resources}") List<String> resources
+        LinkUpdaterFetcher linkUpdaterFetcher
     ) {
         return new JdbcLinkUpdater(
-            questionRepository,
             linkRepository,
             chatLinkRepository,
-            githubClient,
-            stackOverflowClient,
             httpBotClient,
-            resources
+            linkUpdaterFetcher
         );
     }
 }

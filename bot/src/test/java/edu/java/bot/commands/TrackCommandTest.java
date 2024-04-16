@@ -4,8 +4,13 @@ import com.pengrad.telegrambot.model.Chat;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
+import edu.java.bot.configuration.ApplicationConfig;
 import edu.java.bot.processor.DefaultUserMessageProcessor;
 import edu.java.bot.processor.UserMessageProcessor;
+import edu.java.bot.service.LinkParser;
+import edu.java.bot.service.LinkValidator;
+import edu.java.bot.service.MessageParser;
+import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
@@ -15,8 +20,15 @@ import static org.mockito.Mockito.when;
 
 public class TrackCommandTest {
 
-    private final UserMessageProcessor processor = new DefaultUserMessageProcessor();
-    private final Command trackCommand = new TrackCommand(processor);
+    private final ApplicationConfig applicationConfig = new ApplicationConfig(
+        System.getenv("TOKEN"),
+        List.of("github.com")
+    );
+    private final LinkParser linkParser = new LinkParser();
+    private final LinkValidator linkValidator = new LinkValidator(applicationConfig.resources());
+    private final MessageParser messageParser = new MessageParser(linkValidator);
+    private final UserMessageProcessor processor = new DefaultUserMessageProcessor(linkParser, messageParser);
+    private final Command trackCommand = new TrackCommand(processor, linkParser, messageParser);
     private Update update;
     private Message message;
 

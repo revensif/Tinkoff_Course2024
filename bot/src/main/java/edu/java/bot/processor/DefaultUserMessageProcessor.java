@@ -8,6 +8,8 @@ import edu.java.bot.commands.ListCommand;
 import edu.java.bot.commands.StartCommand;
 import edu.java.bot.commands.TrackCommand;
 import edu.java.bot.commands.UntrackCommand;
+import edu.java.bot.service.LinkParser;
+import edu.java.bot.service.MessageParser;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -18,13 +20,13 @@ public class DefaultUserMessageProcessor implements UserMessageProcessor {
 
     private final List<Command> commands = new ArrayList<>();
 
-    public DefaultUserMessageProcessor() {
+    public DefaultUserMessageProcessor(LinkParser linkParser, MessageParser messageParser) {
         this.commands.addAll(List.of(
-            new StartCommand(this),
-            new HelpCommand(this),
-            new TrackCommand(this),
-            new UntrackCommand(this),
-            new ListCommand(this)
+            new StartCommand(this, linkParser, messageParser),
+            new HelpCommand(this, linkParser, messageParser),
+            new TrackCommand(this, linkParser, messageParser),
+            new UntrackCommand(this, linkParser, messageParser),
+            new ListCommand(this, linkParser, messageParser)
         ));
     }
 

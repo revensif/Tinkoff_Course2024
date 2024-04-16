@@ -3,6 +3,8 @@ package edu.java.bot.commands;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
 import edu.java.bot.processor.UserMessageProcessor;
+import edu.java.bot.service.LinkParser;
+import edu.java.bot.service.MessageParser;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
@@ -11,8 +13,8 @@ public class ListCommand extends AbstractCommand {
     public static final String LIST_COMMAND = "/list";
     public static final String DESCRIPTION = "Command to show all tracked links";
 
-    public ListCommand(UserMessageProcessor processor) {
-        super(processor);
+    public ListCommand(UserMessageProcessor processor, LinkParser linkParser, MessageParser messageParser) {
+        super(processor, linkParser, messageParser);
     }
 
     @Override
