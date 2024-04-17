@@ -8,29 +8,21 @@ import edu.java.service.checker.GithubUpdateChecker;
 import edu.java.service.checker.StackOverflowUpdateChecker;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 @Service
 public class LinkUpdaterFetcher {
 
-    private final static List<UpdateChecker> UPDATE_CHECKERS = new ArrayList<>();
+    private final List<UpdateChecker> updateCheckers;
 
-    public LinkUpdaterFetcher(
-        @Qualifier("jdbcQuestionRepository") QuestionRepository questionRepository,
-        GithubClient githubClient,
-        StackOverflowClient stackOverflowClient
-    ) {
-        UPDATE_CHECKERS.addAll(
-            List.of(
-                new GithubUpdateChecker(githubClient),
-                new StackOverflowUpdateChecker(questionRepository, stackOverflowClient)
-            )
-        );
+    public LinkUpdaterFetcher(List<UpdateChecker> updateCheckers) {
+        this.updateCheckers = updateCheckers;
     }
 
     public UpdateChecker getUpdateChecker(Link link) {
-        for (UpdateChecker checker : UPDATE_CHECKERS) {
+        for (UpdateChecker checker : updateCheckers) {
             if (checker.supports(link)) {
                 return checker;
             }
