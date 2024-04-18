@@ -3,24 +3,28 @@ package edu.java.scrapper.client.bot;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import edu.java.client.bot.DefaultHttpBotClient;
 import edu.java.client.bot.HttpBotClient;
-import edu.java.configuration.retry.RetryBackoffConfigurationProperties;
 import edu.java.dto.request.LinkUpdateRequest;
+import edu.java.utils.RetryPolicy;
 import java.net.URI;
+import java.time.Duration;
 import java.util.ArrayList;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.util.retry.Retry;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.moreThanOrExactly;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
+import static edu.java.utils.RetryUtils.getRetry;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@SpringBootTest(properties = "retry.backoff-type=constant")
+@SpringBootTest
 @DirtiesContext
 public class DefaultHttpBotClientTest {
 
@@ -34,11 +38,7 @@ public class DefaultHttpBotClientTest {
         new ArrayList<>()
     );
 
-    @Autowired
-    private RetryBackoffConfigurationProperties configurationProperties;
-
-    @Autowired
-    private ExchangeFilterFunction filterFunction;
+    private final Retry retryBackoff = Retry.max(10);
 
     @BeforeAll
     public static void beforeAll() {
@@ -61,7 +61,7 @@ public class DefaultHttpBotClientTest {
                 .withHeader("Content-type", "application/json")
                 .withBody(expected)
             ));
-        HttpBotClient client = new DefaultHttpBotClient(wireMockServer.baseUrl(), filterFunction);
+        HttpBotClient client = new DefaultHttpBotClient(wireMockServer.baseUrl(), retryBackoff);
         //act
         String result = client.sendUpdate(request).block();
         //assert
@@ -69,15 +69,50 @@ public class DefaultHttpBotClientTest {
     }
 
     @Test
-    public void shouldSendUpdateAndThrowException() {
+    void shouldSendUpdateAfterErrorResponse() {
         //arrange
-        wireMockServer.stubFor(post(URL)
+        String expectedResult = "Чат зарегистрирован";
+        RetryPolicy retryPolicy = new RetryPolicy("constant", 3, Duration.ofSeconds(1), "500-502");
+        int errorStatus = Integer.parseInt(retryPolicy.statuses().split("-")[0]);
+        wireMockServer.stubFor(post(urlEqualTo(URL))
+            .inScenario("Retry scenario")
+            .whenScenarioStateIs(STARTED)
+            .willSetStateTo("Retry succeeded")
             .willReturn(aResponse()
-                .withStatus(400)
-                .withHeader("Content-type", "application/json")
-            ));
-        HttpBotClient client = new DefaultHttpBotClient(wireMockServer.baseUrl(), filterFunction);
+                .withStatus(errorStatus)
+                .withHeader("Content-Type", "application/json")
+            )
+        );
+        wireMockServer.stubFor(post(urlEqualTo(URL))
+            .inScenario("Retry scenario")
+            .whenScenarioStateIs("Retry succeeded")
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/json")
+                .withBody(expectedResult)
+            )
+        );
+        Retry retryBackoff = getRetry(retryPolicy);
+        HttpBotClient client = new DefaultHttpBotClient(wireMockServer.baseUrl(), retryBackoff);
         //act + assert
-        assertThrows(WebClientResponseException.BadRequest.class, () -> client.sendUpdate(request).block());
+        assertThat(client.sendUpdate(request).block()).isEqualTo(expectedResult);
+        wireMockServer.verify(moreThanOrExactly(2), postRequestedFor((urlEqualTo(URL))));
+    }
+
+    @Test
+    void shouldGetErrorResponseAfterSpendingAllAttempts() {
+        //arrange
+        RetryPolicy retryPolicy = new RetryPolicy("exponential", 3, Duration.ofSeconds(1), "500-502");
+        int errorStatus = Integer.parseInt(retryPolicy.statuses().split("-")[0]);
+        wireMockServer.stubFor(post(urlEqualTo(URL))
+            .willReturn(aResponse()
+                .withStatus(errorStatus)
+                .withHeader("Content-Type", "application/json"))
+        );
+        Retry retryBackoff = getRetry(retryPolicy);
+        HttpBotClient client = new DefaultHttpBotClient(wireMockServer.baseUrl(), retryBackoff);
+        //act + assert
+        assertThrows(IllegalStateException.class, () -> client.sendUpdate(request).block());
+        wireMockServer.verify(moreThanOrExactly(retryPolicy.maxAttempts() + 1), postRequestedFor((urlEqualTo(URL))));
     }
 }

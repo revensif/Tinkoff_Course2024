@@ -4,15 +4,12 @@ import edu.java.bot.dto.request.AddLinkRequest;
 import edu.java.bot.dto.request.RemoveLinkRequest;
 import edu.java.bot.dto.response.LinkResponse;
 import edu.java.bot.dto.response.ListLinksResponse;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
-import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
 
-@Component
 public class DefaultHttpScrapperClient implements HttpScrapperClient {
 
     private static final String HEADER = "Tg-Chat-Id";
@@ -20,15 +17,13 @@ public class DefaultHttpScrapperClient implements HttpScrapperClient {
     private static final String TG_CHAT_ENDPOINT = "/tg-chat/{id}";
 
     private final WebClient webClient;
+    private final Retry retryBackoff;
 
-    public DefaultHttpScrapperClient(
-        @Value("${scrapper.base-url}") String baseUrl,
-        ExchangeFilterFunction filterFunction
-    ) {
+    public DefaultHttpScrapperClient(String baseUrl, Retry retryBackoff) {
         this.webClient = WebClient.builder()
             .baseUrl(baseUrl)
-            .filter(filterFunction)
             .build();
+        this.retryBackoff = retryBackoff;
     }
 
     @Override
@@ -36,7 +31,8 @@ public class DefaultHttpScrapperClient implements HttpScrapperClient {
         return webClient.post()
             .uri(TG_CHAT_ENDPOINT, id)
             .retrieve()
-            .bodyToMono(String.class);
+            .bodyToMono(String.class)
+            .retryWhen(retryBackoff);
     }
 
     @Override
@@ -44,7 +40,8 @@ public class DefaultHttpScrapperClient implements HttpScrapperClient {
         return webClient.delete()
             .uri(TG_CHAT_ENDPOINT, id)
             .retrieve()
-            .bodyToMono(String.class);
+            .bodyToMono(String.class)
+            .retryWhen(retryBackoff);
     }
 
     @Override
@@ -53,7 +50,8 @@ public class DefaultHttpScrapperClient implements HttpScrapperClient {
             .uri(LINKS_ENDPOINT)
             .header(HEADER)
             .retrieve()
-            .bodyToMono(ListLinksResponse.class);
+            .bodyToMono(ListLinksResponse.class)
+            .retryWhen(retryBackoff);
     }
 
     @Override
@@ -63,7 +61,8 @@ public class DefaultHttpScrapperClient implements HttpScrapperClient {
             .header(HEADER)
             .body(BodyInserters.fromValue(request))
             .retrieve()
-            .bodyToMono(LinkResponse.class);
+            .bodyToMono(LinkResponse.class)
+            .retryWhen(retryBackoff);
     }
 
     @Override
@@ -73,6 +72,7 @@ public class DefaultHttpScrapperClient implements HttpScrapperClient {
             .header(HEADER)
             .body(BodyInserters.fromValue(request))
             .retrieve()
-            .bodyToMono(LinkResponse.class);
+            .bodyToMono(LinkResponse.class)
+            .retryWhen(retryBackoff);
     }
 }

@@ -2,26 +2,27 @@ package edu.java.client.stackoverflow;
 
 import edu.java.dto.stackoverflow.CommentsResponse;
 import edu.java.dto.stackoverflow.QuestionResponse;
-import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
 
 public class StackOverflowWebClient implements StackOverflowClient {
 
-    private static final String BASE_URL = "https://api.stackexchange.com/2.3/";
+    private static final String BASE_URL = "http://localhost:8080";
     private static final String QUESTION_ENDPOINT = "/questions/{id}?site=stackoverflow";
     private static final String COMMENTS_ENDPOINT = "/questions/{id}/comments?site=stackoverflow";
     private final WebClient webClient;
+    private final Retry retryBackoff;
 
-    public StackOverflowWebClient(ExchangeFilterFunction filterFunction) {
-        this(BASE_URL, filterFunction);
+    public StackOverflowWebClient(Retry retryBackoff) {
+        this(BASE_URL, retryBackoff);
     }
 
-    public StackOverflowWebClient(String baseUrl, ExchangeFilterFunction filterFunction) {
-        webClient = WebClient.builder()
+    public StackOverflowWebClient(String baseUrl, Retry retryBackoff) {
+        this.webClient = WebClient.builder()
             .baseUrl(baseUrl)
-            .filter(filterFunction)
             .build();
+        this.retryBackoff = retryBackoff;
     }
 
     @Override
@@ -29,7 +30,8 @@ public class StackOverflowWebClient implements StackOverflowClient {
         return webClient.get()
             .uri(QUESTION_ENDPOINT, id)
             .retrieve()
-            .bodyToMono(QuestionResponse.class);
+            .bodyToMono(QuestionResponse.class)
+            .retryWhen(retryBackoff);
     }
 
     @Override
@@ -37,6 +39,7 @@ public class StackOverflowWebClient implements StackOverflowClient {
         return webClient.get()
             .uri(COMMENTS_ENDPOINT, id)
             .retrieve()
-            .bodyToMono(CommentsResponse.class);
+            .bodyToMono(CommentsResponse.class)
+            .retryWhen(retryBackoff);
     }
 }

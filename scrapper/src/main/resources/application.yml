@@ -8,15 +8,6 @@ app:
     interval: 10s
     force-check-delay: 10s
 
-retry:
-  max-attempts: 2
-  backoff-type: constant
-  increment: 5s
-  base-delay: 10s
-  max-delay: 100s
-  multiplier: 2.2
-  statuses: 500, 501, 502, 503, 504, 505, 506, 507, 508, 509, 510, 511, 520, 521, 522, 523, 524, 525, 526
-
 spring:
   application:
     name: scrapper
@@ -56,8 +47,28 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
 
-bot:
-  base-url: https://localhost:8090
+client:
+  bot:
+    base-url: http://localhost:8090
+    retry-policy:
+      backoff-type: linear
+      max-attempts: 3
+      delay: 1s
+      statuses: 500-506
+  github:
+    base-url: https://api.github.com/
+    retry-policy:
+      backoff-type: exponential
+      max-attempts: 3
+      delay: 1s
+      statuses: 502-503
+  stackoverflow:
+    base-url: https://api.stackexchange.com/2.3/
+    retry-policy:
+      backoff-type: constant
+      max-attempts: 3
+      delay: 1s
+      statuses: 500-500
 
 logging:
   config: classpath:log4j2-plain.xml

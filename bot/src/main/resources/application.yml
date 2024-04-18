@@ -1,15 +1,6 @@
 app:
   telegram-token: ${TOKEN}
 
-retry:
-  max-attempts: 2
-  backoff-type: constant
-  increment: 5s
-  base-delay: 10s
-  max-delay: 100s
-  multiplier: 2.2
-  statuses: 500, 501, 502, 503, 504, 505, 506, 507, 508, 509, 510, 511, 520, 521, 522, 523, 524, 525, 526
-
 spring:
   application:
     name: bot
@@ -46,8 +37,14 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
 
-scrapper:
-  base-url: https://localhost:8080
+client:
+  scrapper:
+    base-url: http://localhost:8080
+    retry-policy:
+      backoff-type: linear
+      max-attempts: 3
+      delay: 1s
+      statuses: 500-506
 
 logging:
   config: classpath:log4j2-plain.xml
