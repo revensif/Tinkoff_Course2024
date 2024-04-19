@@ -3,9 +3,7 @@ package edu.java.configuration;
 import edu.java.utils.RetryPolicy;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Bean;
 import org.springframework.validation.annotation.Validated;
-import reactor.util.retry.Retry;
 
 @Validated
 @ConfigurationProperties(prefix = "client", ignoreUnknownFields = false)
