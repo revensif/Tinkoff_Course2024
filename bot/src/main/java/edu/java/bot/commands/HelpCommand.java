@@ -4,6 +4,8 @@ import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
 import edu.java.bot.client.scrapper.HttpScrapperClient;
 import edu.java.bot.processor.UserMessageProcessor;
+import edu.java.bot.service.LinkParser;
+import edu.java.bot.service.MessageParser;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
@@ -12,8 +14,13 @@ public class HelpCommand extends AbstractCommand {
     public static final String HELP_COMMAND = "/help";
     public static final String DESCRIPTION = "Command to display a window with commands";
 
-    public HelpCommand(UserMessageProcessor processor, HttpScrapperClient client) {
-        super(processor, client);
+    public HelpCommand(
+        UserMessageProcessor processor,
+        HttpScrapperClient client,
+        LinkParser linkParser,
+        MessageParser messageParser
+    ) {
+        super(processor, client, linkParser, messageParser);
     }
 
     @Override

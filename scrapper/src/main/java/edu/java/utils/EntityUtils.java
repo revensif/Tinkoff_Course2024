@@ -1,8 +1,11 @@
 package edu.java.utils;
 
 import edu.java.dto.Chat;
+import edu.java.dto.ChatLink;
 import edu.java.dto.Link;
+import edu.java.dto.Question;
 import edu.java.dto.entity.ChatEntity;
+import edu.java.dto.entity.ChatLinkEntity;
 import edu.java.dto.entity.LinkEntity;
 import edu.java.dto.entity.QuestionEntity;
 import java.net.URI;
@@ -46,6 +49,43 @@ public class EntityUtils {
             .linkId(linkId)
             .answerCount(answerCount)
             .commentCount(commentCount)
+            .build();
+    }
+
+    public static Question questionEntityToQuestion(QuestionEntity questionEntity) {
+        return new Question(
+            questionEntity.getLinkId(),
+            questionEntity.getAnswerCount(),
+            questionEntity.getCommentCount()
+        );
+    }
+
+    public static QuestionEntity questionToQuestionEntity(Question question) {
+        return QuestionEntity.builder()
+            .linkId(question.linkId())
+            .answerCount(question.answerCount())
+            .commentCount(question.commentCount())
+            .build();
+    }
+
+    public static ChatLinkEntity createChatLinkEntity(long tgChatId, long linkId) {
+        return ChatLinkEntity.builder()
+            .chatId(tgChatId)
+            .linkId(linkId)
+            .build();
+    }
+
+    public static ChatLink chatLinkEntityToChatLink(ChatLinkEntity chatLinkEntity) {
+        return new ChatLink(
+            chatLinkEntity.getChatId(),
+            chatLinkEntity.getLinkId()
+        );
+    }
+
+    public static ChatLinkEntity chatLinkToChatLinkEntity(ChatLink chatLink) {
+        return ChatLinkEntity.builder()
+            .chatId(chatLink.chatId())
+            .linkId(chatLink.linkId())
             .build();
     }
 }

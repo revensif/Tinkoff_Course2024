@@ -4,26 +4,25 @@ import com.pengrad.telegrambot.model.Chat;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
-import edu.java.bot.client.scrapper.HttpScrapperClient;
-import edu.java.bot.dto.request.AddLinkRequest;
-import edu.java.bot.dto.response.LinkResponse;
-import edu.java.bot.processor.DefaultUserMessageProcessor;
-import edu.java.bot.processor.UserMessageProcessor;
-import java.net.URI;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
-import reactor.core.publisher.Mono;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.junit4.SpringRunner;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@SpringBootTest
+@DirtiesContext
+@RunWith(SpringRunner.class)
 public class TrackCommandTest {
 
-    private final HttpScrapperClient client = mock(HttpScrapperClient.class);
-    private final UserMessageProcessor processor = new DefaultUserMessageProcessor(client);
-    private final Command trackCommand = new TrackCommand(processor, client);
+    @Autowired
+    private Command trackCommand;
     private Update update;
     private Message message;
 
@@ -47,26 +46,18 @@ public class TrackCommandTest {
     @Test
     @DisplayName("Link tracking test : Correct link")
     public void shouldReturnCorrectResponse() {
-        //arrange
-        URI link = URI.create("https://github.com/revensif/Tinkoff_Course2024");
-        Mono<LinkResponse> responseMono = Mono.just(new LinkResponse(10L, link));
+        String link = "https://github.com/revensif/Tinkoff_Course2024";
         when(message.text()).thenReturn("/track " + link);
-        when(client.addLink(any(Long.class), any(AddLinkRequest.class))).thenReturn(responseMono);
-        //act
         SendMessage response = trackCommand.handle(update);
-        //assert
         assertThat(response.getParameters().get("text")).isEqualTo("The link is already being tracked");
     }
 
     @Test
     @DisplayName("Link tracking test : Incorrect link")
     public void shouldReturnIncorrectResponse() {
-        //arrange
         String link = "https://mail.ru/";
         when(message.text()).thenReturn("/track " + link);
-        //act
         SendMessage response = trackCommand.handle(update);
-        //assert
         assertThat(response.getParameters().get("text")).isEqualTo(
             "Incorrect input, try /track https://stackoverflow.com");
     }

@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import edu.java.client.bot.DefaultHttpBotClient;
 import edu.java.client.bot.HttpBotClient;
 import edu.java.dto.request.LinkUpdateRequest;
+import edu.java.scrapper.IntegrationTest;
 import edu.java.utils.RetryPolicy;
 import java.net.URI;
 import java.time.Duration;
@@ -26,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @DirtiesContext
-public class DefaultHttpBotClientTest {
+public class DefaultHttpBotClientTest extends IntegrationTest {
 
     private static WireMockServer wireMockServer;
     private static final String URL = "/updates";

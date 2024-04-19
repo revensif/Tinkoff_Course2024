@@ -5,6 +5,7 @@ import edu.java.client.stackoverflow.StackOverflowClient;
 import edu.java.client.stackoverflow.StackOverflowWebClient;
 import edu.java.dto.stackoverflow.CommentsResponse;
 import edu.java.dto.stackoverflow.QuestionResponse;
+import edu.java.scrapper.IntegrationTest;
 import edu.java.utils.RetryPolicy;
 import java.net.URI;
 import java.time.Duration;
@@ -32,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @DirtiesContext
-public class StackOverflowWebClientTest {
+public class StackOverflowWebClientTest extends IntegrationTest {
 
     private static final URI LINK_URL = URI.create("https://stackoverflow.com/questions/12345/test_for_hw2");
     private static final String QUESTION_URL = "/questions/12345?site=stackoverflow";

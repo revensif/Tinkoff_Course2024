@@ -4,23 +4,26 @@ import com.pengrad.telegrambot.model.Chat;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
-import edu.java.bot.client.scrapper.HttpScrapperClient;
 import edu.java.bot.commands.ListCommand;
 import edu.java.bot.commands.StartCommand;
-import edu.java.bot.dto.response.ListLinksResponse;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
-import reactor.core.publisher.Mono;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@SpringBootTest
+@RunWith(SpringRunner.class)
 public class DefaultUserMessageProcessorTest {
 
-    private final HttpScrapperClient client = mock(HttpScrapperClient.class);
-    private final UserMessageProcessor processor = new DefaultUserMessageProcessor(client);
+    @Autowired
+    private UserMessageProcessor processor;
+
     private Update update;
     private Message message;
 
@@ -38,23 +41,17 @@ public class DefaultUserMessageProcessorTest {
     @DisplayName("Commands method test")
     public void shouldReturnProcessorCommands() {
         assertThat(processor.commands().size()).isEqualTo(5);
-        assertThat(processor.commands().getFirst()).isInstanceOf(StartCommand.class);
-        assertThat(processor.commands().getLast()).isInstanceOf(ListCommand.class);
+        assertThat(processor.commands().stream()
+            .anyMatch(command -> command.getClass() == StartCommand.class)).isTrue();
+        assertThat(processor.commands().stream().anyMatch(command -> command.getClass() == ListCommand.class)).isTrue();
     }
 
     @Test
     @DisplayName("Process test : Correct command")
     public void shouldReturnCorrectResponse() {
-        //arrange
         when(update.message()).thenReturn(message);
         when(message.text()).thenReturn("/list");
-        Mono<ListLinksResponse> linksResponse = Mono.just(
-            new ListLinksResponse(null, 0)
-        );
-        when(client.getAllLinks(any(Long.class))).thenReturn(linksResponse);
-        //act
         SendMessage response = processor.process(update);
-        //assert
         assertThat(response.getParameters().get("text")).isEqualTo("You are not tracking any links");
     }
 

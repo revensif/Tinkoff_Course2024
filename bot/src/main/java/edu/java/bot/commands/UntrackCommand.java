@@ -6,13 +6,13 @@ import edu.java.bot.client.scrapper.HttpScrapperClient;
 import edu.java.bot.dto.request.RemoveLinkRequest;
 import edu.java.bot.dto.response.LinkResponse;
 import edu.java.bot.processor.UserMessageProcessor;
+import edu.java.bot.service.LinkParser;
+import edu.java.bot.service.MessageParser;
 import edu.java.bot.utils.Link;
 import java.net.URI;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
-import static edu.java.bot.utils.CommandMessageUtils.getURIFromMessage;
 import static edu.java.bot.utils.Link.INCORRECT_LINK;
-import static edu.java.bot.utils.LinkUtils.parse;
 
 @Log4j2
 public class UntrackCommand extends AbstractCommand {
@@ -20,8 +20,13 @@ public class UntrackCommand extends AbstractCommand {
     public static final String UNTRACK_COMMAND = "/untrack";
     public static final String DESCRIPTION = "Command to stop tracking the link";
 
-    public UntrackCommand(UserMessageProcessor processor, HttpScrapperClient client) {
-        super(processor, client);
+    public UntrackCommand(
+        UserMessageProcessor processor,
+        HttpScrapperClient client,
+        LinkParser linkParser,
+        MessageParser messageParser
+    ) {
+        super(processor, client, linkParser, messageParser);
     }
 
     @Override
@@ -41,11 +46,11 @@ public class UntrackCommand extends AbstractCommand {
         long chatId = message.chat().id();
         log.info("The user: {} requested to stop tracking the link", chatId);
         String[] messageParts = message.text().split(" ");
-        URI url = getURIFromMessage(messageParts);
+        URI url = messageParser.parseMessage(messageParts);
         if (url == null) {
             return new SendMessage(chatId, INCORRECT_LINK);
         }
-        Link link = parse(url);
+        Link link = linkParser.parseLink(url);
         SendMessage sendMessage = new SendMessage(chatId, "This link is already not tracked");
         client.deleteLink(chatId, new RemoveLinkRequest(URI.create(link.toString())))
             .doOnNext(response -> handleClientResponse(response, chatId, sendMessage))

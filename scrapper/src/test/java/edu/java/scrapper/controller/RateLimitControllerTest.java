@@ -2,11 +2,12 @@ package edu.java.scrapper.controller;
 
 import edu.java.dto.response.LinkResponse;
 import edu.java.dto.response.ListLinksResponse;
-import edu.java.service.LinksService;
-import edu.java.service.TgChatService;
 import java.net.URI;
 import java.util.List;
 import java.util.Objects;
+import edu.java.scrapper.IntegrationTest;
+import edu.java.service.LinksService;
+import edu.java.service.TgChatService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,10 +30,6 @@ public class RateLimitControllerTest {
     private static final String CHAT_ID_HEADER = "Tg-Chat-Id";
     private static final String LINKS_URL = "/links";
     private static final Long CHAT_ID = 1L;
-    private static final ListLinksResponse RESPONSE = new ListLinksResponse(
-        List.of(new LinkResponse(CHAT_ID, URI.create("link1.com"))),
-        1
-    );
 
     @Autowired
     private MockMvc mockMvc;

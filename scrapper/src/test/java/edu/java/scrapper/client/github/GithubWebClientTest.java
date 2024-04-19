@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import edu.java.client.github.GithubClient;
 import edu.java.client.github.GithubWebClient;
 import edu.java.dto.github.RepositoryResponse;
+import edu.java.scrapper.IntegrationTest;
 import edu.java.utils.RetryPolicy;
 import java.net.URI;
 import java.time.Duration;
@@ -28,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @DirtiesContext
-public class GithubWebClientTest {
+public class GithubWebClientTest extends IntegrationTest {
 
     private static final URI LINK_URL = URI.create("https://github.com/revensif/Tinkoff_Course2024");
     private static final String URL = "/repos/revensif/Tinkoff_Course2024";
