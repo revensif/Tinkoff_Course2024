@@ -10,8 +10,10 @@ import edu.java.bot.service.LinkParser;
 import edu.java.bot.service.MessageParser;
 import java.util.List;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.stereotype.Component;
 
 @Log4j2
+@Component
 public class ListCommand extends AbstractCommand {
 
     public static final String LIST_COMMAND = "/list";

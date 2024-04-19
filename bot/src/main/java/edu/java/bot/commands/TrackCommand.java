@@ -12,9 +12,11 @@ import edu.java.bot.utils.Link;
 import java.net.URI;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.stereotype.Component;
 import static edu.java.bot.utils.Link.INCORRECT_LINK;
 
 @Log4j2
+@Component
 public class TrackCommand extends AbstractCommand {
 
     public static final String TRACK_COMMAND = "/track";

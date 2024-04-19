@@ -1,28 +1,29 @@
 package edu.java.client.stackoverflow;
 
+import edu.java.configuration.ClientConfigurationProperties;
 import edu.java.dto.stackoverflow.CommentsResponse;
 import edu.java.dto.stackoverflow.QuestionResponse;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
+import static edu.java.utils.RetryUtils.getRetry;
 
+@Component
+@EnableConfigurationProperties(ClientConfigurationProperties.class)
 public class StackOverflowWebClient implements StackOverflowClient {
 
-    private static final String BASE_URL = "http://localhost:8080";
     private static final String QUESTION_ENDPOINT = "/questions/{id}?site=stackoverflow";
     private static final String COMMENTS_ENDPOINT = "/questions/{id}/comments?site=stackoverflow";
     private final WebClient webClient;
     private final Retry retryBackoff;
 
-    public StackOverflowWebClient(Retry retryBackoff) {
-        this(BASE_URL, retryBackoff);
-    }
-
-    public StackOverflowWebClient(String baseUrl, Retry retryBackoff) {
+    public StackOverflowWebClient(ClientConfigurationProperties properties) {
         this.webClient = WebClient.builder()
-            .baseUrl(baseUrl)
+            .baseUrl(properties.stackOverflow().baseUrl())
             .build();
-        this.retryBackoff = retryBackoff;
+        this.retryBackoff = getRetry(properties.stackOverflow().retryPolicy());
     }
 
     @Override

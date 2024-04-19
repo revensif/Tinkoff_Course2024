@@ -66,7 +66,7 @@ public class RetryUtils {
         int firstCode = Integer.parseInt(statusesRange[0]);
         int lastCode = Integer.parseInt(statusesRange[1]);
         Set<Integer> statuses = new HashSet<>();
-        for (int i = firstCode; i < lastCode; i++) {
+        for (int i = firstCode; i <= lastCode; i++) {
             statuses.add(i);
         }
         return throwable -> throwable instanceof WebClientResponseException

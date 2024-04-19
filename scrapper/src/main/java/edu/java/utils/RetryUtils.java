@@ -41,7 +41,6 @@ public class RetryUtils {
         Predicate<Throwable> filter = getErrorFilter(retryProperties.statuses());
         long maxAttempts = retryProperties.maxAttempts() == 0 ? DEFAULT_ATTEMPTS : retryProperties.maxAttempts();
         Duration delay = retryProperties.delay().isZero() ? DEFAULT_DELAY : retryProperties.delay();
-
         switch (retryProperties.backoffType()) {
             case CONSTANT -> {
                 return getConstantRetry(maxAttempts, delay, filter);
@@ -66,7 +65,7 @@ public class RetryUtils {
         int firstCode = Integer.parseInt(statusesRange[0]);
         int lastCode = Integer.parseInt(statusesRange[1]);
         Set<Integer> statuses = new HashSet<>();
-        for (int i = firstCode; i < lastCode; i++) {
+        for (int i = firstCode; i <= lastCode; i++) {
             statuses.add(i);
         }
         return throwable -> throwable instanceof WebClientResponseException

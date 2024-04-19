@@ -54,7 +54,7 @@ client:
     base-url: http://localhost:8090
     retry-policy:
       backoff-type: linear
-      max-attempts: 3
+      max-attempts: 2
       delay: 1s
       statuses: 500-506
   github:
@@ -68,7 +68,7 @@ client:
     base-url: https://api.stackexchange.com/2.3/
     retry-policy:
       backoff-type: constant
-      max-attempts: 3
+      max-attempts: 5
       delay: 1s
       statuses: 500-500
 

@@ -9,6 +9,6 @@ import org.springframework.validation.annotation.Validated;
 @ConfigurationProperties(prefix = "client", ignoreUnknownFields = false)
 public record ClientConfigurationProperties(@NotNull Scrapper scrapper) {
 
-    protected record Scrapper(String baseUrl, RetryPolicy retryPolicy) {
+    public record Scrapper(String baseUrl, RetryPolicy retryPolicy) {
     }
 }

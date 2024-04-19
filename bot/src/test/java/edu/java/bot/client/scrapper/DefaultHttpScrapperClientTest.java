@@ -1,6 +1,7 @@
 package edu.java.bot.client.scrapper;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
+import edu.java.bot.configuration.ClientConfigurationProperties;
 import edu.java.bot.dto.request.AddLinkRequest;
 import edu.java.bot.dto.request.RemoveLinkRequest;
 import edu.java.bot.dto.response.LinkResponse;
@@ -12,6 +13,7 @@ import java.util.List;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import reactor.util.retry.Retry;
@@ -38,7 +40,9 @@ public class DefaultHttpScrapperClientTest {
     private static final URI SECOND_URI = URI.create("test2.com");
     private final LinkResponse firstResponse = new LinkResponse(1L, FIRST_URI);
     private final LinkResponse secondResponse = new LinkResponse(2L, SECOND_URI);
-    private final HttpScrapperClient client = new DefaultHttpScrapperClient(wireMockServer.baseUrl(), Retry.max(10));
+
+    @Autowired
+    private HttpScrapperClient client;
 
     @BeforeAll
     public static void beforeAll() {
@@ -183,8 +187,6 @@ public class DefaultHttpScrapperClientTest {
                 .withBody(expectedResult)
             )
         );
-        Retry retryBackoff = getRetry(retryPolicy);
-        HttpScrapperClient client = new DefaultHttpScrapperClient(wireMockServer.baseUrl(), retryBackoff);
         //act + assert
         assertThat(client.registerChat(2L).block()).isEqualTo(expectedResult);
         wireMockServer.verify(2, postRequestedFor((urlEqualTo(testUrl))));
@@ -201,8 +203,6 @@ public class DefaultHttpScrapperClientTest {
                 .withStatus(errorStatus)
                 .withHeader("Content-Type", "text/plain"))
         );
-        Retry retryBackoff = getRetry(retryPolicy);
-        HttpScrapperClient client = new DefaultHttpScrapperClient(wireMockServer.baseUrl(), retryBackoff);
         //act + assert
         assertThrows(IllegalStateException.class, () -> client.registerChat(3L).block());
         wireMockServer.verify(retryPolicy.maxAttempts() + 1, postRequestedFor((urlEqualTo(testUrl))));

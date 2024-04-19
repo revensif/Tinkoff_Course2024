@@ -1,29 +1,34 @@
 package edu.java.bot.client.scrapper;
 
+import edu.java.bot.configuration.ClientConfigurationProperties;
 import edu.java.bot.dto.request.AddLinkRequest;
 import edu.java.bot.dto.request.RemoveLinkRequest;
 import edu.java.bot.dto.response.LinkResponse;
 import edu.java.bot.dto.response.ListLinksResponse;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.http.HttpMethod;
+import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
+import static edu.java.bot.utils.RetryUtils.getRetry;
 
+@Component
+@EnableConfigurationProperties(ClientConfigurationProperties.class)
 public class DefaultHttpScrapperClient implements HttpScrapperClient {
 
     private static final String HEADER = "Tg-Chat-Id";
     private static final String LINKS_ENDPOINT = "/links";
     private static final String TG_CHAT_ENDPOINT = "/tg-chat/{id}";
-
     private final WebClient webClient;
     private final Retry retryBackoff;
 
-    public DefaultHttpScrapperClient(String baseUrl, Retry retryBackoff) {
+    public DefaultHttpScrapperClient(ClientConfigurationProperties properties) {
         this.webClient = WebClient.builder()
-            .baseUrl(baseUrl)
+            .baseUrl(properties.scrapper().baseUrl())
             .build();
-        this.retryBackoff = retryBackoff;
+        this.retryBackoff = getRetry(properties.scrapper().retryPolicy());
     }
 
     @Override

@@ -3,6 +3,7 @@ package edu.java.scrapper.client.github;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import edu.java.client.github.GithubClient;
 import edu.java.client.github.GithubWebClient;
+import edu.java.configuration.ClientConfigurationProperties;
 import edu.java.dto.github.RepositoryResponse;
 import edu.java.scrapper.IntegrationTest;
 import edu.java.utils.RetryPolicy;
@@ -14,16 +15,12 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
-import reactor.util.retry.Retry;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.moreThanOrExactly;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
-import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
-import static edu.java.utils.RetryUtils.getRetry;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -52,7 +49,17 @@ public class GithubWebClientTest extends IntegrationTest {
         LINK_URL,
         DATE_TIME
     );
-    private final Retry retryBackoff = Retry.max(10);
+    RetryPolicy retryPolicy = new RetryPolicy(
+        "exponential",
+        3,
+        Duration.ofSeconds(1),
+        "500-502");
+    private final ClientConfigurationProperties properties = new ClientConfigurationProperties(
+        new ClientConfigurationProperties.Bot(null, null),
+        new ClientConfigurationProperties.Github(wireMockServer.baseUrl(), retryPolicy),
+        new ClientConfigurationProperties.StackOverflow(null, null)
+    );
+    private final GithubClient client = new GithubWebClient(properties);
 
     @BeforeAll
     public static void beforeAll() {
@@ -71,8 +78,6 @@ public class GithubWebClientTest extends IntegrationTest {
 
     @Test
     public void shouldFetchRepository() {
-        //arrange
-        GithubClient client = new GithubWebClient(wireMockServer.baseUrl(), retryBackoff);
         //act
         RepositoryResponse response = client.fetchRepository(OWNER, REPO).block();
         //assert
@@ -82,7 +87,6 @@ public class GithubWebClientTest extends IntegrationTest {
     @Test
     void shouldGetCorrectResponseAfterErrorResponse() {
         //arrange
-        RetryPolicy retryPolicy = new RetryPolicy("linear", 3, Duration.ofSeconds(1), "500-502");
         int errorStatus = Integer.parseInt(retryPolicy.statuses().split("-")[0]);
         wireMockServer.stubFor(get(urlEqualTo(URL))
             .inScenario("Retry scenario")
@@ -102,8 +106,6 @@ public class GithubWebClientTest extends IntegrationTest {
                 .withBody(RESPONSE_BODY)
             )
         );
-        Retry retryBackoff = getRetry(retryPolicy);
-        GithubClient client = new GithubWebClient(wireMockServer.baseUrl(), retryBackoff);
         //act + assert
         assertThat(client.fetchRepository(OWNER, REPO).block()).isEqualTo(EXPECTED_RESPONSE);
         wireMockServer.verify(moreThanOrExactly(2), getRequestedFor((urlEqualTo(URL))));
@@ -112,15 +114,12 @@ public class GithubWebClientTest extends IntegrationTest {
     @Test
     void shouldGetErrorResponseAfterSpendingAllAttempts() {
         //arrange
-        RetryPolicy retryPolicy = new RetryPolicy("linear", 3, Duration.ofSeconds(1), "500-502");
         int errorStatus = Integer.parseInt(retryPolicy.statuses().split("-")[0]);
         wireMockServer.stubFor(get(urlEqualTo(URL))
             .willReturn(aResponse()
                 .withStatus(errorStatus)
                 .withHeader("Content-Type", "application/json"))
         );
-        Retry retryBackoff = getRetry(retryPolicy);
-        GithubClient client = new GithubWebClient(wireMockServer.baseUrl(), retryBackoff);
         //act + assert
         assertThrows(IllegalStateException.class, () -> client.fetchRepository(OWNER, REPO).block());
         wireMockServer.verify(moreThanOrExactly(retryPolicy.maxAttempts() + 1), getRequestedFor((urlEqualTo(URL))));
