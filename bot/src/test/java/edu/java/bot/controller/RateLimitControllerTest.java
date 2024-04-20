@@ -5,11 +5,13 @@ import edu.java.bot.dto.request.LinkUpdateRequest;
 import java.net.URI;
 import java.util.List;
 import java.util.Objects;
+import edu.java.bot.service.BotService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.cache.CacheManager;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
@@ -33,6 +35,9 @@ public class RateLimitControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockBean
+    private BotService botService;
 
     @Autowired
     private CacheManager cacheManager;
