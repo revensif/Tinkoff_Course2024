@@ -36,9 +36,6 @@ public class DefaultHttpBotClientTest extends IntegrationTest {
     );
 
     @Autowired
-    private RetryBackoffConfigurationProperties configurationProperties;
-
-    @Autowired
     private ExchangeFilterFunction filterFunction;
 
     @BeforeAll

@@ -13,7 +13,6 @@ public class LinkRowMapper implements RowMapper<Link> {
     private static final ZoneOffset ZONE_OFFSET = OffsetDateTime.now().getOffset();
 
     @Override
-
     public Link mapRow(ResultSet rs, int rowNum) throws SQLException {
         long linkId = rs.getLong("link_id");
         URI url = URI.create(rs.getString("url"));

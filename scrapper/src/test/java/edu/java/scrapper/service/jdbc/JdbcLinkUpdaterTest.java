@@ -1,5 +1,6 @@
 package edu.java.scrapper.service.jdbc;
 
+import edu.java.client.bot.HttpBotClient;
 import edu.java.client.github.GithubClient;
 import edu.java.client.stackoverflow.StackOverflowClient;
 import edu.java.dao.repository.jdbc.JdbcChatLinkRepository;
@@ -11,6 +12,10 @@ import edu.java.dto.github.RepositoryResponse;
 import edu.java.dto.stackoverflow.CommentsResponse;
 import edu.java.dto.stackoverflow.QuestionResponse;
 import edu.java.scrapper.IntegrationTest;
+import edu.java.service.LinkUpdaterFetcher;
+import edu.java.service.UpdateChecker;
+import edu.java.service.checker.GithubUpdateChecker;
+import edu.java.service.checker.StackOverflowUpdateChecker;
 import edu.java.service.jdbc.JdbcLinkUpdater;
 import edu.java.service.notification.GeneralNotificationService;
 import java.net.URI;
@@ -43,15 +48,14 @@ public class JdbcLinkUpdaterTest extends IntegrationTest {
     private static final URI GITHUB_URL = URI.create("https://github.com/revensif/Tinkoff_Course2024");
     private static final URI STACKOVERFLOW_URL = URI.create("https://stackoverflow.com/questions/12345/test_for_hw5");
     private static final OffsetDateTime OLD_DATE = OffsetDateTime.now().minusDays(11L).truncatedTo(ChronoUnit.MILLIS);
+    private static final Link FIRST_LINK = new Link(FIRST_ID, GITHUB_URL, OLD_DATE);
+    private static final Link SECOND_LINK = new Link(SECOND_ID, STACKOVERFLOW_URL, OLD_DATE);
 
     @Mock
     private JdbcQuestionRepository questionRepository;
 
     @Mock
-    private JdbcLinkRepository linkRepository;
-
-    @Mock
-    private JdbcChatLinkRepository chatLinkRepository;
+    private HttpBotClient client;
 
     @Mock
     private GithubClient githubClient;
@@ -63,7 +67,13 @@ public class JdbcLinkUpdaterTest extends IntegrationTest {
     private GeneralNotificationService notificationService;
 
     @Mock
-    private List<String> resources;
+    private JdbcLinkRepository linkRepository;
+
+    @Mock
+    private JdbcChatLinkRepository chatLinkRepository;
+
+    @Mock
+    private LinkUpdaterFetcher linkUpdaterFetcher;
 
     @InjectMocks
     private JdbcLinkUpdater linkUpdater;
@@ -74,8 +84,7 @@ public class JdbcLinkUpdaterTest extends IntegrationTest {
     public void shouldUpdateAndGetTwoOutdatedLinks() {
         //arrange
         List<Link> outdatedLinks = Arrays.asList(
-            new Link(FIRST_ID, GITHUB_URL, OLD_DATE),
-            new Link(SECOND_ID, STACKOVERFLOW_URL, OLD_DATE)
+            FIRST_LINK, SECOND_LINK
         );
         Mono<RepositoryResponse> repositoryResponse = Mono.just(
             new RepositoryResponse(FIRST_ID, GITHUB_URL, OffsetDateTime.now())
@@ -92,14 +101,18 @@ public class JdbcLinkUpdaterTest extends IntegrationTest {
             List.of(new CommentsResponse.ItemResponse(FIRST_ID))
         ));
         Question question = new Question(FIRST_ID, ANSWER_COUNT - 2, 1);
-
+        UpdateChecker githubChecker = new GithubUpdateChecker(githubClient);
+        UpdateChecker stackOverflowChecker = new StackOverflowUpdateChecker(
+            questionRepository,
+            stackOverflowClient
+        );
         when(linkRepository.findOutdatedLinks(any(Duration.class))).thenReturn(outdatedLinks);
         when(questionRepository.findByLinkId(any(Long.class))).thenReturn(question);
         when(githubClient.fetchRepository(OWNER, REPO)).thenReturn(repositoryResponse);
         when(stackOverflowClient.fetchQuestion(QUESTION_ID)).thenReturn(questionResponse);
         when(stackOverflowClient.fetchComments(QUESTION_ID)).thenReturn(commentsResponse);
-        when(resources.getFirst()).thenReturn("github.com");
-        when(resources.getLast()).thenReturn("stackoverflow.com");
+        when(linkUpdaterFetcher.getUpdateChecker(FIRST_LINK)).thenReturn(githubChecker);
+        when(linkUpdaterFetcher.getUpdateChecker(SECOND_LINK)).thenReturn(stackOverflowChecker);
         //act
         int actual = linkUpdater.update();
         //assert

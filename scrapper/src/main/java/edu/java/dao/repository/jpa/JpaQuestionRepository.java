@@ -1,17 +1,49 @@
 package edu.java.dao.repository.jpa;
 
+import edu.java.dao.repository.QuestionRepository;
+import edu.java.dao.repository.jpa.inner_repository.InnerJpaQuestionRepository;
+import edu.java.dto.Question;
 import edu.java.dto.entity.QuestionEntity;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import edu.java.utils.EntityUtils;
+import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+import static edu.java.utils.EntityUtils.createQuestionEntity;
+import static edu.java.utils.EntityUtils.questionToQuestionEntity;
 
-public interface JpaQuestionRepository extends JpaRepository<QuestionEntity, Long> {
+@RequiredArgsConstructor
+public class JpaQuestionRepository implements QuestionRepository {
 
-    @Modifying(clearAutomatically = true)
-    @Query("UPDATE QuestionEntity SET answerCount = :answerCount WHERE linkId = :linkId")
-    void changeAnswerCount(long linkId, int answerCount);
+    private final InnerJpaQuestionRepository questionRepository;
 
-    @Modifying(clearAutomatically = true)
-    @Query("UPDATE QuestionEntity SET commentCount = :commentCount WHERE linkId = :linkId")
-    void changeCommentCount(long linkId, int commentCount);
+    @Override
+    public Question addQuestion(long linkId, int answerCount, int commentCount) {
+        questionRepository.saveAndFlush(createQuestionEntity(linkId, answerCount, commentCount));
+        return findByLinkId(linkId);
+    }
+
+    @Override
+    public Question findByLinkId(long linkId) {
+        Optional<QuestionEntity> questionEntity = questionRepository.findById(linkId);
+        return questionEntity.map(EntityUtils::questionEntityToQuestion).orElse(null);
+    }
+
+    @Override
+    public Question removeQuestion(long linkId) {
+        Question removedQuestion = findByLinkId(linkId);
+        if (removedQuestion == null) {
+            return null;
+        }
+        questionRepository.delete(questionToQuestionEntity(removedQuestion));
+        return removedQuestion;
+    }
+
+    @Override
+    public void changeAnswerCount(long linkId, int answerCount) {
+        questionRepository.changeAnswerCount(linkId, answerCount);
+    }
+
+    @Override
+    public void changeCommentCount(long linkId, int commentCount) {
+        questionRepository.changeCommentCount(linkId, commentCount);
+    }
 }

@@ -3,13 +3,9 @@ package edu.java.scrapper.client.github;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import edu.java.client.github.GithubClient;
 import edu.java.client.github.GithubWebClient;
-import edu.java.configuration.retry.RetryBackoffConfigurationProperties;
-import edu.java.dto.Link;
 import edu.java.dto.github.RepositoryResponse;
 import java.net.URI;
 import java.time.OffsetDateTime;
-import edu.java.scrapper.IntegrationTest;
-import edu.java.updates.UpdatesInfo;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -23,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(properties = {"retry.backoff-type=linear", "app.use-queue=false"})
 @DirtiesContext
-public class GithubWebClientTest extends IntegrationTest {
+public class GithubWebClientTest {
 
     private static final URI LINK_URL = URI.create("https://github.com/revensif/Tinkoff_Course2024");
     private static final String URL = "/repos/revensif/Tinkoff_Course2024";
@@ -47,6 +43,9 @@ public class GithubWebClientTest extends IntegrationTest {
         DATE_TIME
     );
 
+    @Autowired
+    private ExchangeFilterFunction filterFunction;
+
     @BeforeAll
     public static void beforeAll() {
         wireMockServer = new WireMockServer();
@@ -56,12 +55,6 @@ public class GithubWebClientTest extends IntegrationTest {
                 .withHeader("Content-Type", "application/json")
                 .withBody(RESPONSE_BODY)));
     }
-
-    @Autowired
-    private RetryBackoffConfigurationProperties configurationProperties;
-
-    @Autowired
-    private ExchangeFilterFunction filterFunction;
 
     @AfterAll
     public static void afterAll() {
