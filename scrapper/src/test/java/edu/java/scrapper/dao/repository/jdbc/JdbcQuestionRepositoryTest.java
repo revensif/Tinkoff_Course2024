@@ -11,11 +11,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.transaction.annotation.Transactional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(properties = "app.database-access-type=jdbc")
 @Transactional
+@DirtiesContext
 public class JdbcQuestionRepositoryTest extends IntegrationTest {
 
     private static final int ANSWER_COUNT = 5;

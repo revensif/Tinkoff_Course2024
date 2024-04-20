@@ -1,6 +1,7 @@
 package edu.java.client.github;
 
 import edu.java.dto.github.RepositoryResponse;
+import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -10,13 +11,14 @@ public class GithubWebClient implements GithubClient {
     private static final String REPOSITORY_ENDPOINT = "/repos/{owner}/{repo}";
     private final WebClient webClient;
 
-    public GithubWebClient() {
-        this(BASE_URL);
+    public GithubWebClient(ExchangeFilterFunction filterFunction) {
+        this(BASE_URL, filterFunction);
     }
 
-    public GithubWebClient(String baseUrl) {
+    public GithubWebClient(String baseUrl, ExchangeFilterFunction filterFunction) {
         this.webClient = WebClient.builder()
             .baseUrl(baseUrl)
+            .filter(filterFunction)
             .build();
     }
 

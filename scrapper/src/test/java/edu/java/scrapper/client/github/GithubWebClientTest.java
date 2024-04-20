@@ -9,10 +9,16 @@ import java.time.OffsetDateTime;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@SpringBootTest(properties = {"retry.backoff-type=linear", "app.use-queue=false"})
+@DirtiesContext
 public class GithubWebClientTest {
 
     private static final URI LINK_URL = URI.create("https://github.com/revensif/Tinkoff_Course2024");
@@ -37,6 +43,9 @@ public class GithubWebClientTest {
         DATE_TIME
     );
 
+    @Autowired
+    private ExchangeFilterFunction filterFunction;
+
     @BeforeAll
     public static void beforeAll() {
         wireMockServer = new WireMockServer();
@@ -55,7 +64,7 @@ public class GithubWebClientTest {
     @Test
     public void shouldFetchRepository() {
         //arrange
-        GithubClient client = new GithubWebClient(wireMockServer.baseUrl());
+        GithubClient client = new GithubWebClient(wireMockServer.baseUrl(), filterFunction);
         //act
         RepositoryResponse response = client.fetchRepository(OWNER, REPO).block();
         //assert

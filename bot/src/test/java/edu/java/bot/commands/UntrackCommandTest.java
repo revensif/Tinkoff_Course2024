@@ -4,34 +4,26 @@ import com.pengrad.telegrambot.model.Chat;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
-import edu.java.bot.configuration.ApplicationConfig;
-import edu.java.bot.processor.UserMessageProcessor;
-import edu.java.bot.service.LinkParser;
-import edu.java.bot.service.LinkValidator;
-import edu.java.bot.service.MessageParser;
-import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.junit4.SpringRunner;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@Component
+@SpringBootTest
+@DirtiesContext
+@RunWith(SpringRunner.class)
 public class UntrackCommandTest {
 
-    private final ApplicationConfig applicationConfig = new ApplicationConfig(
-        System.getenv("TOKEN"),
-        List.of("github.com")
-    );
-    private final LinkParser linkParser = new LinkParser();
-    private final LinkValidator linkValidator = new LinkValidator(applicationConfig.resources());
-    private final MessageParser messageParser = new MessageParser(linkValidator);
     @Autowired
-    private UserMessageProcessor processor;
-    private final Command untrackCommand = new UntrackCommand(processor, linkParser, messageParser);
+    private Command untrackCommand;
+
     private Update update;
     private Message message;
 
@@ -58,7 +50,7 @@ public class UntrackCommandTest {
         String link = "https://github.com/revensif/Tinkoff_Course2024";
         when(message.text()).thenReturn("/untrack " + link);
         SendMessage response = untrackCommand.handle(update);
-        assertThat(response.getParameters().get("text")).isEqualTo("The link " + link + " is no longer being tracked");
+        assertThat(response.getParameters().get("text")).isEqualTo("This link is already not tracked");
     }
 
     @Test

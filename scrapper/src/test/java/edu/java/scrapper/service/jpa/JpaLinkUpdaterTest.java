@@ -17,6 +17,7 @@ import edu.java.service.UpdateChecker;
 import edu.java.service.checker.GithubUpdateChecker;
 import edu.java.service.checker.StackOverflowUpdateChecker;
 import edu.java.service.jpa.JpaLinkUpdater;
+import edu.java.service.notification.GeneralNotificationService;
 import java.net.URI;
 import java.time.Duration;
 import java.time.OffsetDateTime;
@@ -54,13 +55,16 @@ public class JpaLinkUpdaterTest extends IntegrationTest {
     private JpaQuestionRepository questionRepository;
 
     @Mock
+    private HttpBotClient client;
+
+    @Mock
     private GithubClient githubClient;
 
     @Mock
     private StackOverflowClient stackOverflowClient;
 
     @Mock
-    private HttpBotClient httpBotClient;
+    private GeneralNotificationService notificationService;
 
     @Mock
     private JpaLinkRepository linkRepository;

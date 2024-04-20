@@ -7,6 +7,40 @@ app:
     enable: true
     interval: 10s
     force-check-delay: 10s
+  use-queue: false
+
+retry:
+  max-attempts: 2
+  backoff-type: constant
+  increment: 5s
+  base-delay: 10s
+  max-delay: 100s
+  multiplier: 2.2
+  statuses: 500, 501, 502, 503, 504, 505, 506, 507, 508, 509, 510, 511, 520, 521, 522, 523, 524, 525, 526
+
+kafka:
+  topic: messages.updates
+  bootstrap-servers: localhost:29091, localhost:29092
+  client-id: scrapper
+  acks-mode: all
+  delivery-timeout: 60s
+  linger-ms: 12_000
+  batch-size: 100_000
+  enable-idempotence: true # to handle specific retry errors
+
+management:
+  server:
+    port: 8081
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  endpoints:
+    web:
+      base-path: /
+      exposure:
+        include: "info,health,prometheus"
+      path-mapping:
+        prometheus: "metrics"
 
 spring:
   application:
@@ -18,6 +52,29 @@ spring:
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  cache:
+    cache-names:
+      - buckets
+    caffeine:
+      spec: maximumSize=100000,expireAfterAccess=3600s
+    jcache:
+      provider: com.github.benmanes.caffeine.jcache.spi.CaffeineCachingProvider
+
+bucket4j:
+  enabled: true
+  filters:
+    - cache-name: buckets
+      url: (/links.*)|(/tg-chat.*)
+      strategy: first
+      http-response-body: "{ \"status\": 429, \"error\": \"Too Many Requests\", \"message\": \"You have exhausted your API Request Quota\" }"
+      rate-limits:
+        - cache-key: "getRemoteAddr()"
+          bandwidths:
+            - capacity: 5
+              time: 5
+              unit: seconds
 
 server:
   port: 8080
@@ -27,7 +84,7 @@ springdoc:
     path: /swagger-ui.html
 
 bot:
-  base-url: https://localhost:8090
+  base-url: http://localhost:8090
 
 logging:
   config: classpath:log4j2-plain.xml

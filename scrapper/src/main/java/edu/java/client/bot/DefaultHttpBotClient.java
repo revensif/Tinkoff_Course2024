@@ -4,6 +4,7 @@ import edu.java.dto.request.LinkUpdateRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -13,9 +14,10 @@ public class DefaultHttpBotClient implements HttpBotClient {
     private static final String UPDATES_ENDPOINT = "/updates";
     private final WebClient webClient;
 
-    public DefaultHttpBotClient(@Value("${bot.base-url}") String baseUrl) {
+    public DefaultHttpBotClient(@Value("${bot.base-url}") String baseUrl, ExchangeFilterFunction filterFunction) {
         this.webClient = WebClient.builder()
             .baseUrl(baseUrl)
+            .filter(filterFunction)
             .build();
     }
 

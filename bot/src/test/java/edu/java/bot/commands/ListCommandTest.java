@@ -9,12 +9,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
+@DirtiesContext
 @RunWith(SpringRunner.class)
 public class ListCommandTest {
 
@@ -31,6 +33,7 @@ public class ListCommandTest {
     @Test
     @DisplayName("All tracked links test")
     public void shouldReturnCorrectResponse() {
+        //arrange
         Update update = mock(Update.class);
         Message message = mock(Message.class);
         Chat chat = mock(Chat.class);
@@ -38,7 +41,9 @@ public class ListCommandTest {
         when(message.text()).thenReturn("/list");
         when(message.chat()).thenReturn(chat);
         when(chat.id()).thenReturn(10L);
+        //act
         SendMessage response = listCommand.handle(update);
-        assertThat(response.getParameters().get("text")).isEqualTo("It is not tracked because there is no database");
+        //assert
+        assertThat(response.getParameters().get("text")).isEqualTo("You are not tracking any links");
     }
 }

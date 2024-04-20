@@ -10,12 +10,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
+@DirtiesContext
 @RunWith(SpringRunner.class)
 public class TrackCommandTest {
 
@@ -47,7 +49,7 @@ public class TrackCommandTest {
         String link = "https://github.com/revensif/Tinkoff_Course2024";
         when(message.text()).thenReturn("/track " + link);
         SendMessage response = trackCommand.handle(update);
-        assertThat(response.getParameters().get("text")).isEqualTo("The link " + link + " is now being tracked");
+        assertThat(response.getParameters().get("text")).isEqualTo("The link is already being tracked");
     }
 
     @Test
