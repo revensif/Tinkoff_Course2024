@@ -6,4 +6,4 @@ ENV TOKEN=${TOKEN}
 
 EXPOSE 8090
 
-ENTRYPOINT ["java", "-jar", "-Dapp.telegram-token=$TOKEN", "/bot.jar"]
+ENTRYPOINT ["java", "-jar", "-Dapp.TOKEN=$TOKEN", "/bot.jar"]
