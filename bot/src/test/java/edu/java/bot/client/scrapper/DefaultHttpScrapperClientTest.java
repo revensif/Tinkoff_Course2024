@@ -1,7 +1,6 @@
 package edu.java.bot.client.scrapper;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
-import edu.java.bot.configuration.ClientConfigurationProperties;
 import edu.java.bot.dto.request.AddLinkRequest;
 import edu.java.bot.dto.request.RemoveLinkRequest;
 import edu.java.bot.dto.response.LinkResponse;
@@ -16,7 +15,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
-import reactor.util.retry.Retry;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.delete;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -24,7 +22,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
-import static edu.java.bot.utils.RetryUtils.getRetry;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 

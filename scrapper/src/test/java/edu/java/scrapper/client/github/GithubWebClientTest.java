@@ -5,11 +5,14 @@ import edu.java.client.github.GithubClient;
 import edu.java.client.github.GithubWebClient;
 import edu.java.configuration.ClientConfigurationProperties;
 import edu.java.dto.github.RepositoryResponse;
+import edu.java.retry.ExponentialRetryBuilder;
+import edu.java.retry.RetryBuilder;
 import edu.java.scrapper.IntegrationTest;
 import edu.java.utils.RetryPolicy;
 import java.net.URI;
 import java.time.Duration;
 import java.time.OffsetDateTime;
+import java.util.Map;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -53,13 +56,17 @@ public class GithubWebClientTest extends IntegrationTest {
         "exponential",
         3,
         Duration.ofSeconds(1),
-        "500-502");
+        "500-502"
+    );
     private final ClientConfigurationProperties properties = new ClientConfigurationProperties(
         new ClientConfigurationProperties.Bot(null, null),
         new ClientConfigurationProperties.Github(wireMockServer.baseUrl(), retryPolicy),
         new ClientConfigurationProperties.StackOverflow(null, null)
     );
-    private final GithubClient client = new GithubWebClient(properties);
+    private final Map<String, RetryBuilder> retryBuilderMap = Map.of(
+        "exponential", new ExponentialRetryBuilder()
+    );
+    private final GithubClient client = new GithubWebClient(properties, retryBuilderMap);
 
     @BeforeAll
     public static void beforeAll() {

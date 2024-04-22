@@ -5,6 +5,9 @@ import edu.java.bot.dto.request.AddLinkRequest;
 import edu.java.bot.dto.request.RemoveLinkRequest;
 import edu.java.bot.dto.response.LinkResponse;
 import edu.java.bot.dto.response.ListLinksResponse;
+import edu.java.bot.retry.RetryBuilder;
+import edu.java.bot.utils.RetryPolicy;
+import java.util.Map;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
@@ -12,7 +15,6 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
-import static edu.java.bot.utils.RetryUtils.getRetry;
 
 @Component
 @EnableConfigurationProperties(ClientConfigurationProperties.class)
@@ -24,11 +26,17 @@ public class DefaultHttpScrapperClient implements HttpScrapperClient {
     private final WebClient webClient;
     private final Retry retryBackoff;
 
-    public DefaultHttpScrapperClient(ClientConfigurationProperties properties) {
+    public DefaultHttpScrapperClient(
+        ClientConfigurationProperties properties,
+        Map<String, RetryBuilder> retryBuilderMap
+    ) {
         this.webClient = WebClient.builder()
             .baseUrl(properties.scrapper().baseUrl())
             .build();
-        this.retryBackoff = getRetry(properties.scrapper().retryPolicy());
+        RetryPolicy retryPolicy = properties.scrapper().retryPolicy();
+        RetryBuilder builder = retryBuilderMap.get(retryPolicy.backoffType());
+        this.retryBackoff = builder == null ? Retry.max(0)
+            : builder.build(retryPolicy.maxAttempts(), retryPolicy.delay(), retryPolicy.statuses());
     }
 
     @Override

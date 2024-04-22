@@ -3,19 +3,19 @@ package edu.java.scrapper.client.bot;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import edu.java.client.bot.DefaultHttpBotClient;
 import edu.java.client.bot.HttpBotClient;
-import edu.java.client.stackoverflow.StackOverflowClient;
-import edu.java.client.stackoverflow.StackOverflowWebClient;
 import edu.java.configuration.ClientConfigurationProperties;
 import edu.java.dto.request.LinkUpdateRequest;
+import edu.java.retry.LinearRetryBuilder;
+import edu.java.retry.RetryBuilder;
 import edu.java.scrapper.IntegrationTest;
+import edu.java.utils.RetryPolicy;
 import java.net.URI;
 import java.time.Duration;
 import java.util.ArrayList;
-import edu.java.utils.RetryPolicy;
+import java.util.Map;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
@@ -51,7 +51,10 @@ public class DefaultHttpBotClientTest extends IntegrationTest {
         new ClientConfigurationProperties.Github(null, null),
         new ClientConfigurationProperties.StackOverflow(null, null)
     );
-    private final HttpBotClient client = new DefaultHttpBotClient(properties);
+    private final Map<String, RetryBuilder> retryBuilderMap = Map.of(
+        "linear", new LinearRetryBuilder()
+    );
+    private final HttpBotClient client = new DefaultHttpBotClient(properties, retryBuilderMap);
 
     @BeforeAll
     public static void beforeAll() {

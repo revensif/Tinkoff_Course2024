@@ -6,6 +6,8 @@ import edu.java.client.stackoverflow.StackOverflowWebClient;
 import edu.java.configuration.ClientConfigurationProperties;
 import edu.java.dto.stackoverflow.CommentsResponse;
 import edu.java.dto.stackoverflow.QuestionResponse;
+import edu.java.retry.ConstantRetryBuilder;
+import edu.java.retry.RetryBuilder;
 import edu.java.scrapper.IntegrationTest;
 import edu.java.utils.RetryPolicy;
 import java.net.URI;
@@ -14,6 +16,7 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -60,7 +63,7 @@ public class StackOverflowWebClientTest extends IntegrationTest {
             new CommentsResponse.ItemResponse(SECOND_COMMENT_ID)
         )
     );
-    RetryPolicy retryPolicy = new RetryPolicy(
+    private final RetryPolicy retryPolicy = new RetryPolicy(
         "constant",
         5,
         Duration.ofSeconds(1),
@@ -71,7 +74,10 @@ public class StackOverflowWebClientTest extends IntegrationTest {
         new ClientConfigurationProperties.Github(null, null),
         new ClientConfigurationProperties.StackOverflow(wireMockServer.baseUrl(), retryPolicy)
     );
-    private final StackOverflowClient client = new StackOverflowWebClient(properties);
+    private final Map<String, RetryBuilder> retryBuilderMap = Map.of(
+        "constant", new ConstantRetryBuilder()
+    );
+    private final StackOverflowClient client = new StackOverflowWebClient(properties, retryBuilderMap);
 
     @BeforeAll
     public static void beforeAll() {
