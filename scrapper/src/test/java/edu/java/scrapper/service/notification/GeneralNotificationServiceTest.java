@@ -1,20 +1,17 @@
 package edu.java.scrapper.service.notification;
 
-import edu.java.client.bot.HttpBotClient;
-import edu.java.configuration.ApplicationConfig;
 import edu.java.dto.request.LinkUpdateRequest;
 import edu.java.service.notification.GeneralNotificationService;
-import edu.java.service.queue.ScrapperQueueProducer;
+import edu.java.service.sender.ClientUpdateSender;
+import edu.java.service.sender.ScrapperUpdateSender;
 import java.net.URI;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class GeneralNotificationServiceTest {
@@ -27,36 +24,30 @@ public class GeneralNotificationServiceTest {
     );
 
     @Mock
-    private ApplicationConfig applicationConfig;
+    private ScrapperUpdateSender scrapperUpdateSender;
 
     @Mock
-    private ScrapperQueueProducer queueProducer;
-
-    @Mock
-    private HttpBotClient client;
-
-    @InjectMocks
-    private GeneralNotificationService notificationService;
+    private ClientUpdateSender clientUpdateSender;
 
     @Test
     public void shouldSendUpdateWithQueueProducer() {
         //arrange
-        when(applicationConfig.useQueue()).thenReturn(true);
+        GeneralNotificationService notificationService = new GeneralNotificationService(scrapperUpdateSender);
         //act
         notificationService.sendUpdate(REQUEST);
         //assert
-        verify(queueProducer, times(1)).sendUpdate(REQUEST);
-        verify(client, times(0)).sendUpdate(REQUEST);
+        verify(scrapperUpdateSender, times(1)).sendUpdate(REQUEST);
+        verify(clientUpdateSender, times(0)).sendUpdate(REQUEST);
     }
 
     @Test
     public void shouldSendUpdateWithHttpBotClient() {
         //arrange
-        when(applicationConfig.useQueue()).thenReturn(false);
+        GeneralNotificationService notificationService = new GeneralNotificationService(clientUpdateSender);
         //act
         notificationService.sendUpdate(REQUEST);
         //assert
-        verify(client, times(1)).sendUpdate(REQUEST);
-        verify(queueProducer, times(0)).sendUpdate(REQUEST);
+        verify(clientUpdateSender, times(1)).sendUpdate(REQUEST);
+        verify(scrapperUpdateSender, times(0)).sendUpdate(REQUEST);
     }
 }
