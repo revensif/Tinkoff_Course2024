@@ -18,6 +18,29 @@ spring:
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  cache:
+    cache-names:
+      - buckets
+    caffeine:
+      spec: maximumSize=100000,expireAfterAccess=3600s
+    jcache:
+      provider: com.github.benmanes.caffeine.jcache.spi.CaffeineCachingProvider
+
+bucket4j:
+  enabled: true
+  filters:
+    - cache-name: buckets
+      url: (/links.*)|(/tg-chat.*)
+      strategy: first
+      http-response-body: "{ \"status\": 429, \"error\": \"Too Many Requests\", \"message\": \"You have exhausted your API Request Quota\" }"
+      rate-limits:
+        - cache-key: "getRemoteAddr()"
+          bandwidths:
+            - capacity: 5
+              time: 5
+              unit: seconds
 
 server:
   port: 8080
@@ -26,8 +49,28 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
 
-bot:
-  base-url: https://localhost:8090
+client:
+  bot:
+    base-url: http://localhost:8090
+    retry-policy:
+      backoff-type: linear
+      max-attempts: 2
+      delay: 1s
+      statuses: 500-506
+  github:
+    base-url: https://api.github.com/
+    retry-policy:
+      backoff-type: exponential
+      max-attempts: 3
+      delay: 1s
+      statuses: 502-503
+  stackoverflow:
+    base-url: https://api.stackexchange.com/2.3/
+    retry-policy:
+      backoff-type: constant
+      max-attempts: 5
+      delay: 1s
+      statuses: 500-500
 
 logging:
   config: classpath:log4j2-plain.xml

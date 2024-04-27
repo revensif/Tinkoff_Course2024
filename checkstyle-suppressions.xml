@@ -6,4 +6,5 @@
 
 <suppressions>
     <suppress checks=".*" files="scrapper[\\/]src[\\/]main[\\/]java[\\/]edu[\\/]java[\\/]dao[\\/]jooq[\\/].*"/>
+    <suppress checks=".*" files="bot[\\/]src[\\/]main[\\/]java[\\/]edu[\\/]java[\\/]bot[\\/]commands[\\/].*"/>
 </suppressions>

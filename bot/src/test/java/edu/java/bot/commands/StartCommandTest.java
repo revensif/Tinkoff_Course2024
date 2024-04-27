@@ -9,12 +9,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
+@DirtiesContext
 @RunWith(SpringRunner.class)
 public class StartCommandTest {
 
@@ -40,6 +42,6 @@ public class StartCommandTest {
         when(chat.id()).thenReturn(10L);
         SendMessage response = startCommand.handle(update);
         assertThat(response.getParameters()
-            .get("text")).isEqualTo("Bot Started! Now you can track the available sites.");
+            .get("text")).isEqualTo("The bot is already working");
     }
 }

@@ -6,22 +6,12 @@ import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
 import edu.java.bot.commands.ListCommand;
 import edu.java.bot.commands.StartCommand;
-import edu.java.bot.configuration.ApplicationConfig;
-import edu.java.bot.configuration.CommandsConfig;
-import edu.java.bot.service.LinkParser;
-import edu.java.bot.service.LinkValidator;
-import edu.java.bot.service.MessageParser;
-import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.stereotype.Component;
 import org.springframework.test.context.junit4.SpringRunner;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -51,7 +41,8 @@ public class DefaultUserMessageProcessorTest {
     @DisplayName("Commands method test")
     public void shouldReturnProcessorCommands() {
         assertThat(processor.commands().size()).isEqualTo(5);
-        assertThat(processor.commands().stream().anyMatch(command -> command.getClass() == StartCommand.class)).isTrue();
+        assertThat(processor.commands().stream()
+            .anyMatch(command -> command.getClass() == StartCommand.class)).isTrue();
         assertThat(processor.commands().stream().anyMatch(command -> command.getClass() == ListCommand.class)).isTrue();
     }
 
@@ -61,7 +52,7 @@ public class DefaultUserMessageProcessorTest {
         when(update.message()).thenReturn(message);
         when(message.text()).thenReturn("/list");
         SendMessage response = processor.process(update);
-        assertThat(response.getParameters().get("text")).isEqualTo("It is not tracked because there is no database");
+        assertThat(response.getParameters().get("text")).isEqualTo("You are not tracking any links");
     }
 
     @Test

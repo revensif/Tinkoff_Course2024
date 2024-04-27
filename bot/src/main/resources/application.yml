@@ -11,6 +11,27 @@ spring:
     time-zone: UTC
   liquibase:
     enabled: false
+  cache:
+    cache-names:
+      - buckets
+    caffeine:
+      spec: maximumSize=100000,expireAfterAccess=3600s
+    jcache:
+      provider: com.github.benmanes.caffeine.jcache.spi.CaffeineCachingProvider
+
+bucket4j:
+  enabled: true
+  filters:
+    - cache-name: buckets
+      url: /updates.*
+      strategy: first
+      http-response-body: "{ \"status\": 429, \"error\": \"Too Many Requests\", \"message\": \"You have exhausted your API Request Quota\" }"
+      rate-limits:
+        - cache-key: "getRemoteAddr()"
+          bandwidths:
+            - capacity: 5
+              time: 5
+              unit: seconds
 
 server:
   port: 8090
@@ -19,8 +40,14 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
 
-scrapper:
-  base-url: https://localhost:8080
+client:
+  scrapper:
+    base-url: http://localhost:8080
+    retry-policy:
+      backoff-type: linear
+      max-attempts: 3
+      delay: 1s
+      statuses: 500-506
 
 logging:
   config: classpath:log4j2-plain.xml

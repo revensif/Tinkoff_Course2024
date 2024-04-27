@@ -10,12 +10,14 @@ import org.jooq.DSLContext;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.transaction.annotation.Transactional;
 import static edu.java.dao.jooq.Tables.QUESTION;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(properties = "app.database-access-type=jooq")
 @Transactional
+@DirtiesContext
 public class JooqQuestionRepositoryTest extends IntegrationTest {
 
     private static final int ANSWER_COUNT = 5;
