@@ -39,7 +39,8 @@ public class DefaultBotTest {
         List<? extends Command> commands = List.of(startCommand);
         Mockito.<List<? extends Command>>when(processor.commands()).thenReturn(commands);
         String token = System.getenv("TOKEN");
-        DefaultBot bot = new DefaultBot(new ApplicationConfig(token, List.of()), processor);
+        DefaultBot bot =
+            new DefaultBot(new ApplicationConfig(token, List.of(), new ApplicationConfig.ScrapperTopic("")), processor);
         //act
         SetMyCommands result = bot.createMenu();
         //assert
@@ -58,7 +59,8 @@ public class DefaultBotTest {
         when(message.text()).thenReturn("/start");
         when(message.chat()).thenReturn(chat);
         String token = System.getenv("TOKEN");
-        DefaultBot bot = new DefaultBot(new ApplicationConfig(token, List.of()), processor);
+        DefaultBot bot =
+            new DefaultBot(new ApplicationConfig(token, List.of(), new ApplicationConfig.ScrapperTopic("")), processor);
         //act
         int process = bot.process(List.of(update));
         //assert

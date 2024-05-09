@@ -1,13 +1,8 @@
 package edu.java.scrapper.controller;
 
-import edu.java.dto.response.LinkResponse;
-import edu.java.dto.response.ListLinksResponse;
-import java.net.URI;
-import java.util.List;
-import java.util.Objects;
-import edu.java.scrapper.IntegrationTest;
 import edu.java.service.LinksService;
 import edu.java.service.TgChatService;
+import java.util.Objects;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -28,8 +28,61 @@ services:
     networks:
       - backend
 
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.4
+    hostname: zookeeper
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - 2181:2181
+    volumes:
+      - zookeeper:/var/lib/zookeeper
+
+  kafka1:
+    image: confluentinc/cp-kafka:7.4.4
+    depends_on:
+      - zookeeper
+    hostname: kafka1
+    container_name: kafka1
+    ports:
+      - "29091:29091"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      ZOOKEEPER: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka1:9091,PLAINTEXT_HOST://localhost:29091
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9091,PLAINTEXT_HOST://0.0.0.0:29091
+      BOOTSTRAP_SERVERS: kafka1:9091,kafka2:9092
+    volumes:
+      - kafka1:/var/lib/kafka1
+
+  kafka2:
+    image: confluentinc/cp-kafka:7.4.4
+    depends_on:
+      - zookeeper
+    hostname: kafka2
+    container_name: kafka2
+    ports:
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      ZOOKEEPER: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka2:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:29092
+      BOOTSTRAP_SERVERS: kafka1:9091,kafka2:9092
+    volumes:
+      - kafka2:/var/lib/kafka2
+
 volumes:
   postgresql: { }
+  zookeeper: { }
+  kafka1: { }
+  kafka2: { }
 
 networks:
   backend: { }

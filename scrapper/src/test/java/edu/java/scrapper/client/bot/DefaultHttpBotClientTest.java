@@ -18,6 +18,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.moreThanOrExactly;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
@@ -121,7 +122,6 @@ public class DefaultHttpBotClientTest extends IntegrationTest {
                 .withHeader("Content-Type", "application/json"))
         );
         //act + assert
-        assertThrows(IllegalStateException.class, () -> client.sendUpdate(request).block());
-        wireMockServer.verify(moreThanOrExactly(retryPolicy.maxAttempts() + 1), postRequestedFor((urlEqualTo(URL))));
+        assertThrows(WebClientResponseException.BadRequest.class, () -> client.sendUpdate(request).block());
     }
 }

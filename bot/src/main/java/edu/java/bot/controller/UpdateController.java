@@ -21,7 +21,7 @@ public class UpdateController {
 
     @PostMapping()
     public ResponseEntity<String> sendUpdate(@RequestBody @Valid LinkUpdateRequest request) {
-        botService.sendUpdate();
+        botService.sendUpdate(request);
         return ResponseEntity.ok("Обновление обработано");
     }
 }

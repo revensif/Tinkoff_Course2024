@@ -3,6 +3,8 @@ app:
     - github.com
     - stackoverflow.com
   telegram-token: ${TOKEN}
+  scrapper-topic:
+    name: messages.updates
 
 spring:
   application:

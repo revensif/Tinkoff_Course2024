@@ -15,6 +15,12 @@ public record ApplicationConfig(
 
     @NotNull
     @Bean
-    List<String> resources
+    List<String> resources,
+
+    @NotNull
+    ScrapperTopic scrapperTopic
 ) {
+
+    public record ScrapperTopic(String name) {
+    }
 }
