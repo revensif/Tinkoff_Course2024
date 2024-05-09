@@ -4,23 +4,28 @@ import com.pengrad.telegrambot.model.Chat;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
-import edu.java.bot.client.scrapper.HttpScrapperClient;
-import edu.java.bot.processor.DefaultUserMessageProcessor;
 import edu.java.bot.processor.UserMessageProcessor;
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.junit4.SpringRunner;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@SpringBootTest
+@DirtiesContext
+@RunWith(SpringRunner.class)
 public class HelpCommandTest {
 
-    private final MeterRegistry registry = new SimpleMeterRegistry();
-    private final HttpScrapperClient client = mock(HttpScrapperClient.class);
-    private final UserMessageProcessor processor = new DefaultUserMessageProcessor(client, registry);
-    private final Command helpCommand = new HelpCommand(processor, client);
+    @Autowired
+    private Command helpCommand;
+
+    @Autowired
+    private UserMessageProcessor processor;
 
     @Test
     @DisplayName("Command name and description Test")

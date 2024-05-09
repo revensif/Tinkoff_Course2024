@@ -10,6 +10,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.support.Acknowledgment;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -32,12 +33,23 @@ public class ScrapperQueueListenerTest {
             1L,
             URI.create("link1.com"),
             "description",
-            List.of()
+            List.of(1L)
         );
         //act
         queueListener.listen(request, acknowledgment);
         //assert
         verify(botService, times(1)).sendUpdate(request);
+        verify(acknowledgment, times(1)).acknowledge();
+    }
+
+    @Test
+    public void shouldListenAndThrowErrorAfterIncorrectLink() {
+        //arrange
+        LinkUpdateRequest request = new LinkUpdateRequest(0L, null, null, null);
+        //act
+        assertThrows(RuntimeException.class, () -> queueListener.listen(request, acknowledgment));
+        //assert
+        verify(botService, times(0)).sendUpdate(request);
         verify(acknowledgment, times(1)).acknowledge();
     }
 }

@@ -1,18 +1,18 @@
 package edu.java.configuration;
 
-import edu.java.client.github.GithubClient;
+import edu.java.client.bot.HttpBotClient;
 import edu.java.client.stackoverflow.StackOverflowClient;
 import edu.java.dao.repository.jooq.JooqChatLinkRepository;
 import edu.java.dao.repository.jooq.JooqChatRepository;
 import edu.java.dao.repository.jooq.JooqLinkRepository;
 import edu.java.dao.repository.jooq.JooqQuestionRepository;
 import edu.java.service.LinkUpdater;
+import edu.java.service.LinkUpdaterFetcher;
 import edu.java.service.LinksService;
 import edu.java.service.TgChatService;
 import edu.java.service.jooq.JooqLinkUpdater;
 import edu.java.service.jooq.JooqLinksService;
 import edu.java.service.jooq.JooqTgChatService;
-import edu.java.service.notification.GeneralNotificationService;
 import java.util.List;
 import org.jooq.conf.RenderQuotedNames;
 import org.jooq.impl.DefaultConfiguration;
@@ -51,22 +51,16 @@ public class JooqConfig {
 
     @Bean
     public LinkUpdater jooqLinkUpdater(
-        JooqQuestionRepository questionRepository,
         JooqLinkRepository linkRepository,
         JooqChatLinkRepository chatLinkRepository,
-        GithubClient githubClient,
-        StackOverflowClient stackOverflowClient,
-        GeneralNotificationService notificationService,
-        @Value("#{@resources}") List<String> resources
+        HttpBotClient httpBotClient,
+        LinkUpdaterFetcher linkUpdaterFetcher
     ) {
         return new JooqLinkUpdater(
-            questionRepository,
             linkRepository,
             chatLinkRepository,
-            githubClient,
-            stackOverflowClient,
-            notificationService,
-            resources
+            httpBotClient,
+            linkUpdaterFetcher
         );
     }
 }

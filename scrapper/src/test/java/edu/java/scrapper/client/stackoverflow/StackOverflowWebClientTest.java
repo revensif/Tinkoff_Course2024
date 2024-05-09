@@ -3,29 +3,37 @@ package edu.java.scrapper.client.stackoverflow;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import edu.java.client.stackoverflow.StackOverflowClient;
 import edu.java.client.stackoverflow.StackOverflowWebClient;
-import edu.java.configuration.retry.RetryBackoffConfigurationProperties;
+import edu.java.configuration.ClientConfigurationProperties;
 import edu.java.dto.stackoverflow.CommentsResponse;
 import edu.java.dto.stackoverflow.QuestionResponse;
+import edu.java.retry.ConstantRetryBuilder;
+import edu.java.retry.RetryBuilder;
+import edu.java.scrapper.IntegrationTest;
+import edu.java.utils.RetryPolicy;
 import java.net.URI;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
-import edu.java.scrapper.IntegrationTest;
+import java.util.Map;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.moreThanOrExactly;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static edu.java.scrapper.client.stackoverflow.StackOverflowJsonResponse.COMMENTS_RESPONSE_BODY;
 import static edu.java.scrapper.client.stackoverflow.StackOverflowJsonResponse.QUESTION_RESPONSE_BODY;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@SpringBootTest(properties = {"retry.backoff-type=exponential", "app.use-queue=false"})
+@SpringBootTest
 @DirtiesContext
 public class StackOverflowWebClientTest extends IntegrationTest {
 
@@ -49,19 +57,27 @@ public class StackOverflowWebClientTest extends IntegrationTest {
             )
         )
     );
-
     private static final CommentsResponse COMMENTS_EXPECTED_RESPONSE = new CommentsResponse(
         List.of(
             new CommentsResponse.ItemResponse(FIRST_COMMENT_ID),
             new CommentsResponse.ItemResponse(SECOND_COMMENT_ID)
         )
     );
-
-    @Autowired
-    private RetryBackoffConfigurationProperties configurationProperties;
-
-    @Autowired
-    private ExchangeFilterFunction filterFunction;
+    private final RetryPolicy retryPolicy = new RetryPolicy(
+        "constant",
+        5,
+        Duration.ofSeconds(1),
+        "502-502"
+    );
+    private final ClientConfigurationProperties properties = new ClientConfigurationProperties(
+        new ClientConfigurationProperties.Bot(null, null),
+        new ClientConfigurationProperties.Github(null, null),
+        new ClientConfigurationProperties.StackOverflow(wireMockServer.baseUrl(), retryPolicy)
+    );
+    private final Map<String, RetryBuilder> retryBuilderMap = Map.of(
+        "constant", new ConstantRetryBuilder()
+    );
+    private final StackOverflowClient client = new StackOverflowWebClient(properties, retryBuilderMap);
 
     @BeforeAll
     public static void beforeAll() {
@@ -84,8 +100,6 @@ public class StackOverflowWebClientTest extends IntegrationTest {
 
     @Test
     public void shouldFetchQuestion() {
-        //arrange
-        StackOverflowClient client = new StackOverflowWebClient(wireMockServer.baseUrl(), filterFunction);
         //act
         QuestionResponse response = client.fetchQuestion(QUESTION_ID).block();
         //assert
@@ -94,11 +108,97 @@ public class StackOverflowWebClientTest extends IntegrationTest {
 
     @Test
     public void shouldFetchComments() {
-        //arrange
-        StackOverflowClient client = new StackOverflowWebClient(wireMockServer.baseUrl(), filterFunction);
         //act
         CommentsResponse response = client.fetchComments(QUESTION_ID).block();
         //assert
         assertThat(response).isEqualTo(COMMENTS_EXPECTED_RESPONSE);
+    }
+
+    @Test
+    void shouldGetCorrectResponseAfterFetchingCommentsAfterErrorResponse() {
+        //arrange
+        int errorStatus = Integer.parseInt(retryPolicy.statuses().split("-")[0]);
+        wireMockServer.stubFor(get(urlEqualTo(COMMENTS_URL))
+            .inScenario("Retry scenario")
+            .whenScenarioStateIs(STARTED)
+            .willSetStateTo("Retry succeeded")
+            .willReturn(aResponse()
+                .withStatus(errorStatus)
+                .withHeader("Content-Type", "application/json")
+            )
+        );
+        wireMockServer.stubFor(get(urlEqualTo(COMMENTS_URL))
+            .inScenario("Retry scenario")
+            .whenScenarioStateIs("Retry succeeded")
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/json")
+                .withBody(COMMENTS_RESPONSE_BODY)
+            )
+        );
+        //act + assert
+        assertThat(client.fetchComments(QUESTION_ID).block()).isEqualTo(COMMENTS_EXPECTED_RESPONSE);
+        wireMockServer.verify(moreThanOrExactly(2), getRequestedFor((urlEqualTo(COMMENTS_URL))));
+    }
+
+    @Test
+    void shouldGetErrorResponseAfterFetchingCommentsAfterSpendingAllAttempts() {
+        //arrange
+        int errorStatus = Integer.parseInt(retryPolicy.statuses().split("-")[0]);
+        wireMockServer.stubFor(get(urlEqualTo(COMMENTS_URL))
+            .willReturn(aResponse()
+                .withStatus(errorStatus)
+                .withHeader("Content-Type", "application/json"))
+        );
+        //act + assert
+        assertThrows(IllegalStateException.class, () -> client.fetchComments(QUESTION_ID).block());
+        wireMockServer.verify(
+            moreThanOrExactly(retryPolicy.maxAttempts() + 1),
+            getRequestedFor((urlEqualTo(COMMENTS_URL)))
+        );
+    }
+
+    @Test
+    void shouldGetCorrectResponseAfterFetchingQuestionsAfterErrorResponse() {
+        //arrange
+        int errorStatus = Integer.parseInt(retryPolicy.statuses().split("-")[0]);
+        wireMockServer.stubFor(get(urlEqualTo(QUESTION_URL))
+            .inScenario("Retry scenario")
+            .whenScenarioStateIs(STARTED)
+            .willSetStateTo("Retry succeeded")
+            .willReturn(aResponse()
+                .withStatus(errorStatus)
+                .withHeader("Content-Type", "application/json")
+            )
+        );
+        wireMockServer.stubFor(get(urlEqualTo(QUESTION_URL))
+            .inScenario("Retry scenario")
+            .whenScenarioStateIs("Retry succeeded")
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/json")
+                .withBody(QUESTION_RESPONSE_BODY)
+            )
+        );
+        //act + assert
+        assertThat(client.fetchQuestion(QUESTION_ID).block()).isEqualTo(QUESTION_EXPECTED_RESPONSE);
+        wireMockServer.verify(getRequestedFor((urlEqualTo(QUESTION_URL))));
+    }
+
+    @Test
+    void shouldGetErrorResponseAfterFetchingQuestionsAfterSpendingAllAttempts() {
+        //arrange
+        int errorStatus = Integer.parseInt(retryPolicy.statuses().split("-")[0]);
+        wireMockServer.stubFor(get(urlEqualTo(QUESTION_URL))
+            .willReturn(aResponse()
+                .withStatus(errorStatus)
+                .withHeader("Content-Type", "application/json"))
+        );
+        //act + assert
+        assertThrows(IllegalStateException.class, () -> client.fetchQuestion(QUESTION_ID).block());
+        wireMockServer.verify(
+            moreThanOrExactly(retryPolicy.maxAttempts() + 1),
+            getRequestedFor((urlEqualTo(QUESTION_URL)))
+        );
     }
 }

@@ -5,16 +5,25 @@ import com.pengrad.telegrambot.request.SendMessage;
 import edu.java.bot.client.scrapper.HttpScrapperClient;
 import edu.java.bot.commands.entities.Text;
 import edu.java.bot.processor.UserMessageProcessor;
+import edu.java.bot.service.LinkParser;
+import edu.java.bot.service.MessageParser;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.stereotype.Component;
 
 @Log4j2
+@Component
 public class StartCommand extends AbstractCommand {
 
     private static final String START_COMMAND = "/start";
     private static final String DESCRIPTION = "Command to start the bot";
 
-    public StartCommand(UserMessageProcessor processor, HttpScrapperClient client) {
-        super(processor, client);
+    public StartCommand(
+        UserMessageProcessor processor,
+        HttpScrapperClient client,
+        LinkParser linkParser,
+        MessageParser messageParser
+    ) {
+        super(processor, client, linkParser, messageParser);
     }
 
     @Override

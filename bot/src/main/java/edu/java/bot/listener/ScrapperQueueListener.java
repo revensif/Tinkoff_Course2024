@@ -18,6 +18,10 @@ public class ScrapperQueueListener {
     @KafkaListener(topics = "${app.scrapper-topic.name}", containerFactory = "kafkaListenerContainerFactory")
     public void listen(LinkUpdateRequest request, Acknowledgment acknowledgment) {
         log.info("A new update has arrived: {}", request);
+        if (!isRequestCorrect(request)) {
+            acknowledgment.acknowledge();
+            throw new RuntimeException("Incorrect request to add link!");
+        }
         try {
             botService.sendUpdate(request);
         } catch (Exception e) {
@@ -26,5 +30,10 @@ public class ScrapperQueueListener {
         } finally {
             acknowledgment.acknowledge();
         }
+    }
+
+    private boolean isRequestCorrect(LinkUpdateRequest request) {
+        return ((request != null) && (request.id() != null) && (request.url() != null)
+            && (request.description() != null) && (request.tgChatIds() != null) && (!request.tgChatIds().isEmpty()));
     }
 }

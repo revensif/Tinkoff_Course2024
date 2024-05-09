@@ -1,12 +1,13 @@
 package edu.java.bot.client.scrapper;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
-import edu.java.bot.configuration.retry.RetryBackoffConfigurationProperties;
 import edu.java.bot.dto.request.AddLinkRequest;
 import edu.java.bot.dto.request.RemoveLinkRequest;
 import edu.java.bot.dto.response.LinkResponse;
 import edu.java.bot.dto.response.ListLinksResponse;
+import edu.java.bot.utils.RetryPolicy;
 import java.net.URI;
+import java.time.Duration;
 import java.util.List;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -14,16 +15,17 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.delete;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@SpringBootTest(properties = "retry.backoff-type=constant")
+@SpringBootTest
 @DirtiesContext
 public class DefaultHttpScrapperClientTest {
 
@@ -37,10 +39,7 @@ public class DefaultHttpScrapperClientTest {
     private final LinkResponse secondResponse = new LinkResponse(2L, SECOND_URI);
 
     @Autowired
-    private RetryBackoffConfigurationProperties configurationProperties;
-
-    @Autowired
-    private ExchangeFilterFunction filterFunction;
+    private HttpScrapperClient client;
 
     @BeforeAll
     public static void beforeAll() {
@@ -63,23 +62,10 @@ public class DefaultHttpScrapperClientTest {
                 .withHeader("Content-type", "application/json")
                 .withBody(expected)
             ));
-        HttpScrapperClient client = new DefaultHttpScrapperClient(wireMockServer.baseUrl(), filterFunction);
         //act
         String result = client.registerChat(ID).block();
         //assert
         assertThat(result).isEqualTo(expected);
-    }
-
-    @Test
-    public void shouldRegisterChatAndThrowException() {
-        //arrange
-        wireMockServer.stubFor(post(CHAT_URL)
-            .willReturn(aResponse()
-                .withStatus(400)
-            ));
-        HttpScrapperClient client = new DefaultHttpScrapperClient(wireMockServer.baseUrl(), filterFunction);
-        //act + assert
-        assertThrows(WebClientResponseException.BadRequest.class, () -> client.registerChat(ID).block());
     }
 
     @Test
@@ -92,23 +78,10 @@ public class DefaultHttpScrapperClientTest {
                 .withHeader("Content-type", "application/json")
                 .withBody(expected)
             ));
-        HttpScrapperClient client = new DefaultHttpScrapperClient(wireMockServer.baseUrl(), filterFunction);
         //act
         String result = client.deleteChat(ID).block();
         //assert
         assertThat(result).isEqualTo(expected);
-    }
-
-    @Test
-    public void shouldDeleteChatAndThrowException() {
-        //arrange
-        wireMockServer.stubFor(delete(CHAT_URL)
-            .willReturn(aResponse()
-                .withStatus(400)
-            ));
-        HttpScrapperClient client = new DefaultHttpScrapperClient(wireMockServer.baseUrl(), filterFunction);
-        //act + assert
-        assertThrows(WebClientResponseException.BadRequest.class, () -> client.deleteChat(ID).block());
     }
 
     @Test
@@ -138,23 +111,10 @@ public class DefaultHttpScrapperClientTest {
                     }
                     """)
             ));
-        HttpScrapperClient client = new DefaultHttpScrapperClient(wireMockServer.baseUrl(), filterFunction);
         //act
         ListLinksResponse result = client.getAllLinks(ID).block();
         //assert
         assertThat(result).isEqualTo(expected);
-    }
-
-    @Test
-    public void shouldGetAllLinksAndThrowException() {
-        //arrange
-        wireMockServer.stubFor(get(LINKS_URL)
-            .willReturn(aResponse()
-                .withStatus(400)
-            ));
-        HttpScrapperClient client = new DefaultHttpScrapperClient(wireMockServer.baseUrl(), filterFunction);
-        //act + assert
-        assertThrows(WebClientResponseException.BadRequest.class, () -> client.getAllLinks(ID).block());
     }
 
     @Test
@@ -171,25 +131,11 @@ public class DefaultHttpScrapperClientTest {
                     }
                     """)
             ));
-        HttpScrapperClient client = new DefaultHttpScrapperClient(wireMockServer.baseUrl(), filterFunction);
         AddLinkRequest request = new AddLinkRequest(FIRST_URI);
         //act
         LinkResponse result = client.addLink(ID, request).block();
         //assert
         assertThat(result).isEqualTo(firstResponse);
-    }
-
-    @Test
-    public void shouldAddLinkAndThrowException() {
-        //arrange
-        wireMockServer.stubFor(post(LINKS_URL)
-            .willReturn(aResponse()
-                .withStatus(400)
-            ));
-        HttpScrapperClient client = new DefaultHttpScrapperClient(wireMockServer.baseUrl(), filterFunction);
-        AddLinkRequest request = new AddLinkRequest(FIRST_URI);
-        //act + assert
-        assertThrows(WebClientResponseException.BadRequest.class, () -> client.addLink(ID, request).block());
     }
 
     @Test
@@ -206,7 +152,6 @@ public class DefaultHttpScrapperClientTest {
                     }
                     """)
             ));
-        HttpScrapperClient client = new DefaultHttpScrapperClient(wireMockServer.baseUrl(), filterFunction);
         RemoveLinkRequest request = new RemoveLinkRequest(FIRST_URI);
         //act
         LinkResponse result = client.deleteLink(ID, request).block();
@@ -215,15 +160,48 @@ public class DefaultHttpScrapperClientTest {
     }
 
     @Test
-    public void shouldDeleteLinkAndThrowException() {
+    void shouldGetCorrectResponseAfterErrorResponse() {
         //arrange
-        wireMockServer.stubFor(delete(LINKS_URL)
+        String testUrl = "/tg-chat/2";
+        String expectedResult = "Чат зарегистрирован";
+        RetryPolicy retryPolicy = new RetryPolicy("linear", 3, Duration.ofSeconds(1), "500-502");
+        int errorStatus = Integer.parseInt(retryPolicy.statuses().split("-")[0]);
+        wireMockServer.stubFor(post(urlEqualTo(testUrl))
+            .inScenario("Retry scenario")
+            .whenScenarioStateIs(STARTED)
+            .willSetStateTo("Retry succeeded")
             .willReturn(aResponse()
-                .withStatus(400)
-            ));
-        HttpScrapperClient client = new DefaultHttpScrapperClient(wireMockServer.baseUrl(), filterFunction);
-        RemoveLinkRequest request = new RemoveLinkRequest(FIRST_URI);
+                .withStatus(errorStatus)
+                .withHeader("Content-Type", "text/plain")
+            )
+        );
+        wireMockServer.stubFor(post(urlEqualTo(testUrl))
+            .inScenario("Retry scenario")
+            .whenScenarioStateIs("Retry succeeded")
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "text/plain")
+                .withBody(expectedResult)
+            )
+        );
         //act + assert
-        assertThrows(WebClientResponseException.BadRequest.class, () -> client.deleteLink(ID, request).block());
+        assertThat(client.registerChat(2L).block()).isEqualTo(expectedResult);
+        wireMockServer.verify(2, postRequestedFor((urlEqualTo(testUrl))));
+    }
+
+    @Test
+    void shouldGetErrorResponseAfterSpendingAllAttempts() {
+        //arrange
+        String testUrl = "/tg-chat/3";
+        RetryPolicy retryPolicy = new RetryPolicy("linear", 3, Duration.ofSeconds(1), "500-502");
+        int errorStatus = Integer.parseInt(retryPolicy.statuses().split("-")[0]);
+        wireMockServer.stubFor(post(urlEqualTo(testUrl))
+            .willReturn(aResponse()
+                .withStatus(errorStatus)
+                .withHeader("Content-Type", "text/plain"))
+        );
+        //act + assert
+        assertThrows(IllegalStateException.class, () -> client.registerChat(3L).block());
+        wireMockServer.verify(retryPolicy.maxAttempts() + 1, postRequestedFor((urlEqualTo(testUrl))));
     }
 }

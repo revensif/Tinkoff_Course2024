@@ -5,42 +5,46 @@ import com.pengrad.telegrambot.model.Chat;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SetMyCommands;
-import edu.java.bot.client.scrapper.HttpScrapperClient;
 import edu.java.bot.commands.Command;
-import edu.java.bot.commands.StartCommand;
 import edu.java.bot.configuration.ApplicationConfig;
 import edu.java.bot.processor.DefaultUserMessageProcessor;
 import edu.java.bot.processor.UserMessageProcessor;
+import java.util.List;
+import java.util.Map;
+import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import java.util.List;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import org.springframework.stereotype.Component;
-import reactor.core.publisher.Mono;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@Component
+@SpringBootTest
+@RunWith(SpringRunner.class)
 public class DefaultBotTest {
 
-    private final MeterRegistry registry = new SimpleMeterRegistry();
-    private final HttpScrapperClient client = mock(HttpScrapperClient.class);
+    @Autowired
+    private Command startCommand;
+
+    @Autowired
+    private Map<String, Counter> counters;
 
     @Test
     @DisplayName("Menu creation test")
     public void shouldCreateMenu() {
         //arrange
         UserMessageProcessor processor = mock(DefaultUserMessageProcessor.class);
-        Command startCommand = new StartCommand(processor, client);
         List<? extends Command> commands = List.of(startCommand);
         Mockito.<List<? extends Command>>when(processor.commands()).thenReturn(commands);
         String token = System.getenv("TOKEN");
         DefaultBot bot =
-            new DefaultBot(new ApplicationConfig(token, new ApplicationConfig.ScrapperTopic("topic")), processor);
+            new DefaultBot(new ApplicationConfig(token, List.of(), new ApplicationConfig.ScrapperTopic("")), processor);
         //act
         SetMyCommands result = bot.createMenu();
         //assert
@@ -52,22 +56,23 @@ public class DefaultBotTest {
     @DisplayName("Process test")
     public void shouldProcessUpdates() {
         //arrange
-        UserMessageProcessor processor = new DefaultUserMessageProcessor(client, registry);
         Update update = mock(Update.class);
         Message message = mock(Message.class);
         Chat chat = mock(Chat.class);
+        UserMessageProcessor processor = new DefaultUserMessageProcessor(List.of(startCommand), counters);
         when(update.message()).thenReturn(message);
         when(message.text()).thenReturn("/start");
         when(message.chat()).thenReturn(chat);
-        when(client.registerChat(any(Long.class))).thenReturn(Mono.just("Ok"));
         String token = System.getenv("TOKEN");
         DefaultBot bot =
-            new DefaultBot(new ApplicationConfig(token, new ApplicationConfig.ScrapperTopic("topic")), processor);
+            new DefaultBot(new ApplicationConfig(token, List.of(), new ApplicationConfig.ScrapperTopic("")), processor);
         //act
         int process = bot.process(List.of(update));
-        double messagesProcessedNumber = registry.counter("messages_processed_number").count();
+        double messagesProcessedNumber = counters.get("messageCounter").count();
+        double startCommandsNumber = counters.get(startCommand.command()).count();
         //assert
         assertThat(process).isEqualTo(-1);
         assertThat(messagesProcessedNumber).isEqualTo(1.0);
+        assertThat(startCommandsNumber).isEqualTo(1.0);
     }
 }

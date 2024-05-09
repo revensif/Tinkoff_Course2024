@@ -1,6 +1,5 @@
 package edu.java.scrapper.controller;
 
-import edu.java.scrapper.IntegrationTest;
 import edu.java.service.LinksService;
 import edu.java.service.TgChatService;
 import java.util.Objects;
@@ -20,7 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @DirtiesContext
 @AutoConfigureMockMvc
-public class RateLimitControllerTest extends IntegrationTest {
+public class RateLimitControllerTest {
 
     private static final String CHAT_URL = "/tg-chat/";
     private static final String CHAT_ID_HEADER = "Tg-Chat-Id";

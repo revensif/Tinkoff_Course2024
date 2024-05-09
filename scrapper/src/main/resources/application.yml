@@ -7,26 +7,7 @@ app:
     enable: true
     interval: 10s
     force-check-delay: 10s
-  use-queue: false
-
-retry:
-  max-attempts: 2
-  backoff-type: constant
-  increment: 5s
-  base-delay: 10s
-  max-delay: 100s
-  multiplier: 2.2
-  statuses: 500, 501, 502, 503, 504, 505, 506, 507, 508, 509, 510, 511, 520, 521, 522, 523, 524, 525, 526
-
-kafka:
-  topic: messages.updates
-  bootstrap-servers: localhost:29091, localhost:29092
-  client-id: scrapper
-  acks-mode: all
-  delivery-timeout: 60s
-  linger-ms: 12_000
-  batch-size: 100_000
-  enable-idempotence: true # to handle specific retry errors
+  use-queue: true
 
 management:
   server:
@@ -52,6 +33,8 @@ spring:
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
   cache:
     cache-names:
       - buckets
@@ -74,6 +57,16 @@ bucket4j:
               time: 5
               unit: seconds
 
+kafka:
+  topic: messages.updates
+  bootstrap-servers: localhost:29091, localhost:29092
+  client-id: scrapper
+  acks-mode: all
+  delivery-timeout: 60s
+  linger-ms: 12_000
+  batch-size: 100_000
+  enable-idempotence: true # to handle specific retry errors
+
 server:
   port: 8080
 
@@ -81,8 +74,28 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
 
-bot:
-  base-url: http://localhost:8090
+client:
+  bot:
+    base-url: http://localhost:8090
+    retry-policy:
+      backoff-type: linear
+      max-attempts: 2
+      delay: 1s
+      statuses: 500-506
+  github:
+    base-url: https://api.github.com/
+    retry-policy:
+      backoff-type: exponential
+      max-attempts: 3
+      delay: 1s
+      statuses: 502-503
+  stackoverflow:
+    base-url: https://api.stackexchange.com/2.3/
+    retry-policy:
+      backoff-type: constant
+      max-attempts: 5
+      delay: 1s
+      statuses: 500-500
 
 logging:
   config: classpath:log4j2-plain.xml

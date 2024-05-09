@@ -1,32 +1,10 @@
 app:
+  resources:
+    - github.com
+    - stackoverflow.com
   telegram-token: ${TOKEN}
   scrapper-topic:
     name: messages.updates
-
-retry:
-  max-attempts: 2
-  backoff-type: constant
-  increment: 5s
-  base-delay: 10s
-  max-delay: 100s
-  multiplier: 2.2
-  statuses: 500, 501, 502, 503, 504, 505, 506, 507, 508, 509, 510, 511, 520, 521, 522, 523, 524, 525, 526
-
-kafka:
-  bootstrap-servers: localhost:29091, localhost:29092
-  group-id: bot
-  auto-offset-reset: latest
-  max-poll-interval-ms: 300_000
-  enable-auto-commit: false
-  concurrency: 2
-  dlq:
-    topic: messages.updates_dlq
-    replications: 2
-    partitions: 2
-    acks-mode: all
-    delivery-timeout: 60s
-    linger-ms: 12_000
-    batch-size: 100_000
 
 management:
   server:
@@ -71,6 +49,22 @@ bucket4j:
               time: 5
               unit: seconds
 
+kafka:
+  bootstrap-servers: localhost:29091, localhost:29092
+  group-id: bot
+  auto-offset-reset: latest
+  max-poll-interval-ms: 300_000
+  enable-auto-commit: false
+  concurrency: 2
+  dlq:
+    topic: messages.updates_dlq
+    replications: 2
+    partitions: 2
+    acks-mode: all
+    delivery-timeout: 60s
+    linger-ms: 12_000
+    batch-size: 100_000
+
 server:
   port: 8090
 
@@ -78,8 +72,14 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
 
-scrapper:
-  base-url: http://localhost:8080
+client:
+  scrapper:
+    base-url: http://localhost:8080
+    retry-policy:
+      backoff-type: linear
+      max-attempts: 3
+      delay: 1s
+      statuses: 500-506
 
 logging:
   config: classpath:log4j2-plain.xml
