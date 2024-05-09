@@ -1,5 +1,6 @@
 package edu.java.scrapper.service.jooq;
 
+import edu.java.client.bot.HttpBotClient;
 import edu.java.client.github.GithubClient;
 import edu.java.client.stackoverflow.StackOverflowClient;
 import edu.java.dao.repository.jooq.JooqChatLinkRepository;
@@ -64,6 +65,9 @@ public class JooqLinkUpdaterTest extends IntegrationTest {
 
     @Mock
     private JooqLinkRepository linkRepository;
+
+    @Mock
+    private HttpBotClient httpBotClient;
 
     @Mock
     private JooqChatLinkRepository chatLinkRepository;

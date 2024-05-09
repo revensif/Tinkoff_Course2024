@@ -43,6 +43,16 @@ bucket4j:
               time: 5
               unit: seconds
 
+kafka:
+  topic: messages.updates
+  bootstrap-servers: localhost:29091, localhost:29092
+  client-id: scrapper
+  acks-mode: all
+  delivery-timeout: 60s
+  linger-ms: 12_000
+  batch-size: 100_000
+  enable-idempotence: true # to handle specific retry errors
+
 server:
   port: 8080
 

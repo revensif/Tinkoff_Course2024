@@ -1,5 +1,6 @@
 package edu.java.scrapper.service.jdbc;
 
+import edu.java.client.bot.HttpBotClient;
 import edu.java.client.github.GithubClient;
 import edu.java.client.stackoverflow.StackOverflowClient;
 import edu.java.dao.repository.jdbc.JdbcChatLinkRepository;
@@ -61,6 +62,9 @@ public class JdbcLinkUpdaterTest extends IntegrationTest {
 
     @Mock
     private GeneralNotificationService notificationService;
+
+    @Mock
+    private HttpBotClient httpBotClient;
 
     @Mock
     private JdbcLinkRepository linkRepository;

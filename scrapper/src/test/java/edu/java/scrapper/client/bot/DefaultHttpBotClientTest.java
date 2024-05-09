@@ -122,6 +122,6 @@ public class DefaultHttpBotClientTest extends IntegrationTest {
                 .withHeader("Content-Type", "application/json"))
         );
         //act + assert
-        assertThrows(WebClientResponseException.BadRequest.class, () -> client.sendUpdate(request).block());
+        assertThrows(IllegalStateException.class, () -> client.sendUpdate(request).block());
     }
 }
