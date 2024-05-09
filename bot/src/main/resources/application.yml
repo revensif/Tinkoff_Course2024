@@ -46,7 +46,7 @@ bucket4j:
         - cache-key: "getRemoteAddr()"
           bandwidths:
             - capacity: 5
-              time: 5
+              time: 10
               unit: seconds
 
 kafka:
