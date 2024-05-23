@@ -55,9 +55,12 @@ public class TrackCommandTest {
     @Test
     @DisplayName("Link tracking test : Incorrect link")
     public void shouldReturnIncorrectResponse() {
+        //arrange
         String link = "https://mail.ru/";
         when(message.text()).thenReturn("/track " + link);
+        //act
         SendMessage response = trackCommand.handle(update);
+        //assert
         assertThat(response.getParameters().get("text")).isEqualTo(
             "Incorrect input, try /track https://stackoverflow.com");
     }

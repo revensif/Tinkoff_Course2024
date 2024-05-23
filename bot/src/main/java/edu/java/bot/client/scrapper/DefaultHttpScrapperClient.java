@@ -61,7 +61,7 @@ public class DefaultHttpScrapperClient implements HttpScrapperClient {
     public Mono<ListLinksResponse> getAllLinks(Long id) {
         return webClient.get()
             .uri(LINKS_ENDPOINT)
-            .header(HEADER)
+            .header(HEADER, String.valueOf(id))
             .retrieve()
             .bodyToMono(ListLinksResponse.class)
             .retryWhen(retryBackoff);
@@ -71,7 +71,7 @@ public class DefaultHttpScrapperClient implements HttpScrapperClient {
     public Mono<LinkResponse> addLink(Long id, AddLinkRequest request) {
         return webClient.post()
             .uri(LINKS_ENDPOINT)
-            .header(HEADER)
+            .header(HEADER, String.valueOf(id))
             .body(BodyInserters.fromValue(request))
             .retrieve()
             .bodyToMono(LinkResponse.class)
@@ -82,7 +82,7 @@ public class DefaultHttpScrapperClient implements HttpScrapperClient {
     public Mono<LinkResponse> deleteLink(Long id, RemoveLinkRequest request) {
         return webClient.method(HttpMethod.DELETE)
             .uri(LINKS_ENDPOINT)
-            .header(HEADER)
+            .header(HEADER, String.valueOf(id))
             .body(BodyInserters.fromValue(request))
             .retrieve()
             .bodyToMono(LinkResponse.class)

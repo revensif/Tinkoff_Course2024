@@ -55,9 +55,12 @@ public class UntrackCommandTest {
     @Test
     @DisplayName("Link untracking test : Incorrect link")
     public void shouldReturnIncorrectResponse() {
+        //assert
         String link = "https://mail.ru/";
         when(message.text()).thenReturn("/untrack " + link);
+        //act
         SendMessage response = untrackCommand.handle(update);
+        //assert
         assertThat(response.getParameters().get("text")).isEqualTo(
             "Incorrect input, try /track https://stackoverflow.com");
     }

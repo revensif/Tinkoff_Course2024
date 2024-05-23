@@ -9,6 +9,20 @@ app:
     force-check-delay: 10s
   use-queue: true
 
+management:
+  server:
+    port: 8081
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  endpoints:
+    web:
+      base-path: /
+      exposure:
+        include: "info,health,prometheus"
+      path-mapping:
+        prometheus: "metrics"
+
 spring:
   application:
     name: scrapper
